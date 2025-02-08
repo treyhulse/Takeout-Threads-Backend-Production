@@ -21,6 +21,7 @@ interface iAppProps {
 
 export function UploadImageForm({ siteId }: iAppProps) {
   const [imageUrl, setImageUrl] = useState<undefined | string>(undefined);
+  
   return (
     <Card>
       <CardHeader>
@@ -42,11 +43,16 @@ export function UploadImageForm({ siteId }: iAppProps) {
           <UploadDropzone
             endpoint="imageUploader"
             onClientUploadComplete={(res) => {
-              setImageUrl(res[0].url);
-              toast.success("Image has been uploaded");
+              if (res?.[0]?.url) {
+                setImageUrl(res[0].url);
+                toast.success("Image uploaded successfully");
+              }
             }}
-            onUploadError={() => {
-              toast.error("Something went wrong.");
+            onUploadError={(error: Error) => {
+              toast.error(`Error: ${error.message || "Something went wrong"}`);
+            }}
+            onUploadBegin={() => {
+              toast.info("Upload started...");
             }}
           />
         )}
