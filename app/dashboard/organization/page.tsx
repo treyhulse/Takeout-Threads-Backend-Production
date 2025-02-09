@@ -83,7 +83,7 @@ export default async function OrganizationPage() {
                       {key.replace(/_/g, ' ')}
                     </p>
                     <p className="text-sm">
-                      {value !== null ? value.toString() : "-"}
+                      {value ? value.toString() : "-"}
                     </p>
                   </div>
                 ))}
