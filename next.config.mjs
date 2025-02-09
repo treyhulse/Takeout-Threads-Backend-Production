@@ -12,8 +12,14 @@ const nextConfig = {
         hostname: "lh3.googleusercontent.com",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "gravatar.com",
+        port: "",
+      },
     ],
   },
 };
+
 
 export default nextConfig;
