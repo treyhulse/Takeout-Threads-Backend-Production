@@ -47,6 +47,33 @@ export async function deleteOrganization(orgCode: string) {
   }
 }
 
+/**
+ * Updates an organization's details
+ * PATCH /api/v1/organization/{org_code}
+ */
+export async function updateOrganization(
+  orgCode: string,
+  updateData: {
+    name?: string;
+    theme_code?: 'light' | 'dark' | 'user_preference';
+    handle?: string;
+  }
+) {
+  try {
+    const response = await kindeApiFetch(`/organization/${orgCode}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Update Organization Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
 // Organization users actions
 
 /**
@@ -177,26 +204,6 @@ export async function getOrganizationProperties(orgCode: string) {
     return { success: true, data: response };
   } catch (error) {
     console.error('Get Organization Properties Error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    };
-  }
-}
-
-/**
- * Update organization properties
- * PATCH /api/v1/organizations/{org_code}/properties
- */
-export async function updateOrganizationProperties(orgCode: string, properties: Record<string, any>) {
-  try {
-    const response = await kindeApiFetch(`/organizations/${orgCode}/properties`, {
-      method: 'PATCH',
-      body: JSON.stringify({ properties }),
-    });
-    return { success: true, data: response };
-  } catch (error) {
-    console.error('Update Organization Properties Error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'

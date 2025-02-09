@@ -1,69 +1,52 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { updateOrganizationProperties } from "@/lib/kinde/actions/organization";
+import { updateOrganization } from "@/lib/kinde/actions/organization";
 
 interface OrganizationDetails {
-  properties?: {
-    org_city: string;
-    org_country: string;
-    org_industry: string;
-    org_postcode: string;
-    org_state_region: string;
-    org_street_address: string;
-    org_street_address_2: string;
-  }
+  name?: string;
+  theme_code?: 'light' | 'dark' | 'user_preference';
+  handle?: string;
 }
-
-const defaultProperties = {
-  org_city: "",
-  org_country: "",
-  org_industry: "",
-  org_postcode: "",
-  org_state_region: "",
-  org_street_address: "",
-  org_street_address_2: "",
-};
 
 const OrganizationManagement: React.FC<{ orgDetails: OrganizationDetails; orgCode: string }> = ({ 
   orgDetails, 
   orgCode 
 }) => {
-  const [formData, setFormData] = useState(orgDetails.properties || defaultProperties);
+  const [formData, setFormData] = useState({
+    name: orgDetails.name || '',
+    theme_code: orgDetails.theme_code || 'light',
+    handle: orgDetails.handle || '',
+  });
+  
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (orgDetails.properties) {
-      setFormData(orgDetails.properties);
-    }
-  }, [orgDetails]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
 
     try {
-      const result = await updateOrganizationProperties(orgCode, formData);
-      
+      const result = await updateOrganization(orgCode, formData);
+
       if (!result.success) {
         throw new Error(result.error);
       }
 
       toast({
         title: "Success",
-        description: "Organization properties updated successfully",
+        description: "Organization settings updated successfully",
       });
     } catch (err: any) {
-      console.error('Error updating properties:', err);
+      console.error('Error updating organization:', err);
       toast({
         title: "Error",
-        description: err.message || "Failed to update organization properties",
+        description: err.message || "Failed to update organization",
         variant: "destructive",
       });
     } finally {
@@ -75,72 +58,39 @@ const OrganizationManagement: React.FC<{ orgDetails: OrganizationDetails; orgCod
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Organization Details</CardTitle>
+          <CardTitle>Organization Settings</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="org_street_address">Street Address</Label>
-              <Input
-                id="org_street_address"
-                value={formData.org_street_address}
-                onChange={(e) => setFormData(prev => ({ ...prev, org_street_address: e.target.value }))}
-              />
-            </div>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="name">Organization Name</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="org_street_address_2">Street Address 2</Label>
-              <Input
-                id="org_street_address_2"
-                value={formData.org_street_address_2}
-                onChange={(e) => setFormData(prev => ({ ...prev, org_street_address_2: e.target.value }))}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="handle">Organization Handle</Label>
+            <Input
+              id="handle"
+              value={formData.handle}
+              onChange={(e) => setFormData(prev => ({ ...prev, handle: e.target.value }))}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="org_city">City</Label>
-              <Input
-                id="org_city"
-                value={formData.org_city}
-                onChange={(e) => setFormData(prev => ({ ...prev, org_city: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="org_state_region">State/Region</Label>
-              <Input
-                id="org_state_region"
-                value={formData.org_state_region}
-                onChange={(e) => setFormData(prev => ({ ...prev, org_state_region: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="org_postcode">Postal Code</Label>
-              <Input
-                id="org_postcode"
-                value={formData.org_postcode}
-                onChange={(e) => setFormData(prev => ({ ...prev, org_postcode: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="org_country">Country</Label>
-              <Input
-                id="org_country"
-                value={formData.org_country}
-                onChange={(e) => setFormData(prev => ({ ...prev, org_country: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="org_industry">Industry</Label>
-              <Input
-                id="org_industry"
-                value={formData.org_industry}
-                onChange={(e) => setFormData(prev => ({ ...prev, org_industry: e.target.value }))}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="theme_code">Theme</Label>
+            <select
+              id="theme_code"
+              value={formData.theme_code}
+              onChange={(e) => setFormData(prev => ({ ...prev, theme_code: e.target.value as 'light' | 'dark' | 'user_preference' }))}
+              className="w-full rounded-md border border-input bg-background px-3 py-2"
+            >
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="user_preference">User Preference</option>
+            </select>
           </div>
 
           <div className="flex justify-end mt-6">
