@@ -13,6 +13,7 @@ import {
 import Defaultimage from "@/public/default.png";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Key, ReactElement, JSXElementConstructor, ReactNode, AwaitedReactNode, ReactPortal } from "react";
 
 async function getData(subDir: string) {
   const data = await prisma.site.findUnique({
@@ -65,15 +66,16 @@ export default async function BlogIndexPage({
       </nav>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
-        {data.posts.map((item) => (
+        {data.posts.map((item: { id: Key | null | undefined; image: any; title: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | Promise<AwaitedReactNode> | null | undefined; smallDescription: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; slug: any; }) => (
           <Card key={item.id}>
             <Image
               src={item.image ?? Defaultimage}
-              alt={item.title}
+              alt={item.title as string}
               className="rounded-t-lg object-cover w-full h-[200px]"
               width={400}
               height={200}
             />
+
             <CardHeader>
               <CardTitle className="truncate">{item.title}</CardTitle>
               <CardDescription className="line-clamp-3">
