@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle"
 import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/components"
 import { RegisterLink } from "@kinde-oss/kinde-auth-nextjs/components"
+import OrganizationSwitcher from "../dashboard/OrganizationSwitcher"
+import {CreateOrgLink} from "@kinde-oss/kinde-auth-nextjs/components";
 
 
 export default function Navigation() {
@@ -112,6 +114,7 @@ export default function Navigation() {
         </nav>
       </div>
     </div>
+
   )
 }
 

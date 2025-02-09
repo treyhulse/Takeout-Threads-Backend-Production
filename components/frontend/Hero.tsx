@@ -13,24 +13,6 @@ import HeroImage from "@/public/media/designer.png";
 export function Hero() {
   return (
     <>
-      <div className="relative flex flex-col w-full py-5 mx-auto md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-row items-center justify-between text-sm lg:justify-start">
-          <div className="md:hidden">
-            <ThemeToggle />
-          </div>
-        </div>
-
-        <nav className="hidden md:flex md:justify-end md:space-x-4">
-          <ThemeToggle />
-          <LoginLink>
-            <Button variant="secondary">Sign in</Button>
-          </LoginLink>
-          <RegisterLink>
-            <Button>Sign up</Button>
-          </RegisterLink>
-        </nav>
-      </div>
-
       <section className="relative flex items-center justify-center">
         <div className="relative items-center w-full py-12 lg:py-20">
           <div className="text-center">
@@ -45,8 +27,8 @@ export function Hero() {
             </h1>
 
             <p className="max-w-xl mx-auto mt-4 text-base font-light lg:text-lg text-muted-foreground tracking-tighter">
-              Setting up your blog is hard and time consuming. We make it easy
-              for you to create a blog in minutes
+              Setting up your shop is hard and time consuming. We make it easy
+              for you manage your operations.
             </p>
             <div className="flex items-center gap-x-5 w-full justify-center mt-5 ">
               <LoginLink>
