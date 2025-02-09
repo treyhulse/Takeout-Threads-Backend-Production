@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { ReactNode } from "react";
-import Logo from "@/public/logos/BlackLogo-Text.png";
+import LightLogo from "@/public/logos/BlackLogo-Text.png";
+import DarkLogo from "@/public/logos/WhiteLogo-Text.png";
 import Image from "next/image";
 import { DashboardItems } from "@/components/dashboard/DashboardItems";
 import { Calendar, ChartNoAxesCombined, Globe, LayoutDashboard, Shirt, ShoppingCart, Unplug, Users } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+
 
 export const navLinks = [
   {
@@ -62,10 +64,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Image 
-                src={Logo} 
+                src={LightLogo} 
                 alt="Takeout Threads" 
                 width={100}
                 height={100}
+                className="block dark:hidden"
+              />
+              <Image 
+                src={DarkLogo} 
+                alt="Takeout Threads" 
+                width={100}
+                height={100}
+                className="hidden dark:block"
               />
             </Link>
           </div>
