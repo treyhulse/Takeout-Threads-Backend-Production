@@ -1,124 +1,174 @@
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EmptyState } from "@/components/dashboard/EmptyState";
-import prisma from "../utils/db";
-import { requireUser } from "../utils/requireUser";
-import SitesRoute from "./sites/page";
-import Image from "next/image";
-import Defaultimage from "@/public/default.png";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { 
+  Circle as CircleIcon, 
+  Shirt as ShirtIcon, 
+  Clock as ClockIcon, 
+  AlertCircle as AlertCircleIcon, 
+  MessageSquare as MessageSquareIcon,
+  Truck as TruckIcon 
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { OrdersChart } from "./OrdersChart"
 
-async function getData(userId: string) {
-  const [sites, articles] = await Promise.all([
-    prisma.site.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 3,
-    }),
-    prisma.post.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 3,
-    }),
-  ]);
+const mockData = [
+  { month: 'Jan', orders: 65 },
+  { month: 'Feb', orders: 59 },
+  { month: 'Mar', orders: 80 },
+  { month: 'Apr', orders: 81 },
+  { month: 'May', orders: 56 },
+  { month: 'Jun', orders: 95 },
+]
 
-  return { sites, articles };
-}
-
-export default async function DashboardIndexPage() {
-  const user = await requireUser();
-  const { articles, sites } = await getData(user.id);
+export default function DashboardPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-5">Your Sites</h1>
-      {sites.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
-          {sites.map((item) => (
-            <Card key={item.id}>
-              <Image
-                src={item.imageUrl ?? Defaultimage}
-                alt={item.name}
-                className="rounded-t-lg object-cover w-full h-[200px]"
-                width={400}
-                height={200}
-              />
-              <CardHeader>
-                <CardTitle className="truncate">{item.name}</CardTitle>
-                <CardDescription className="line-clamp-3">
-                  {item.description}
-                </CardDescription>
-              </CardHeader>
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      
+      {/* KPI Section */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Today&apos;s Orders</CardTitle>
+            <ShirtIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
 
-              <CardFooter>
-                <Button asChild className="w-full">
-                  <Link href={`/dashboard/sites/${item.id}`}>
-                    View Articles
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          title="You dont have any sites created"
-          description="You currently dont have any Sites. Please create some so that you can see them right here."
-          href="/dashboard/sites/new"
-          buttonText="Create Site"
-        />
-      )}
+            <div className="text-2xl font-bold">23</div>
+            <p className="text-xs text-muted-foreground">+12% from yesterday</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Pending Production</CardTitle>
+            <CircleIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">45</div>
+            <p className="text-xs text-muted-foreground">18 due today</p>
+          </CardContent>
+        </Card>
 
-      <h1 className="text-2xl mt-10 font-semibold mb-5">Recent Articles</h1>
-      {articles.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
-          {articles.map((item) => (
-            <Card key={item.id}>
-              <Image
-                src={item.image ?? Defaultimage}
-                alt={item.title}
-                className="rounded-t-lg object-cover w-full h-[200px]"
-                width={400}
-                height={200}
-              />
-              <CardHeader>
-                <CardTitle className="truncate">{item.title}</CardTitle>
-                <CardDescription className="line-clamp-3">
-                  {item.smallDescription}
-                </CardDescription>
-              </CardHeader>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Revenue Today</CardTitle>
+            <CircleIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$2,834</div>
+            <p className="text-xs text-muted-foreground">+8% from yesterday</p>
+          </CardContent>
+        </Card>
 
-              <CardFooter>
-                <Button asChild className="w-full">
-                  <Link href={`/dashboard/sites/${item.siteId}/${item.id}`}>
-                    Edit Article
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          title="You dont have any articles created"
-          description="Your currently dont have any articles created. Please create some so that you can see them right here"
-          buttonText="Create Article"
-          href="/dashboard/sites"
-        />
-      )}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Ink Inventory</CardTitle>
+            <CircleIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">82%</div>
+            <Progress value={82} className="mt-2" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts and Activity Section */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Orders Overview</CardTitle>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <OrdersChart data={mockData} />
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              <div className="flex items-center">
+                <TruckIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                <div className="ml-4 space-y-1">
+                  <p className="text-sm font-medium">Order #1234 shipped</p>
+                  <p className="text-sm text-muted-foreground">5 minutes ago</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <ShirtIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                <div className="ml-4 space-y-1">
+                  <p className="text-sm font-medium">New order received</p>
+                  <p className="text-sm text-muted-foreground">15 minutes ago</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <AlertCircleIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                <div className="ml-4 space-y-1">
+                  <p className="text-sm font-medium">Low ink alert: Black</p>
+                  <p className="text-sm text-muted-foreground">1 hour ago</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions and Reminders */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <Button className="w-full">
+              Create New Order
+            </Button>
+            <Button variant="outline" className="w-full">
+              View Production Queue
+            </Button>
+            <Button variant="outline" className="w-full">
+              Update Inventory
+            </Button>
+            <Button variant="outline" className="w-full">
+              Schedule Maintenance
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Reminders</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <ClockIcon className="mr-2 h-4 w-4 text-red-500" />
+                <div className="ml-4 space-y-1">
+                  <p className="text-sm font-medium">Screen cleaning due</p>
+                  <p className="text-sm text-muted-foreground">Today, 5:00 PM</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <ClockIcon className="mr-2 h-4 w-4 text-yellow-500" />
+                <div className="ml-4 space-y-1">
+                  <p className="text-sm font-medium">Ink inventory check</p>
+                  <p className="text-sm text-muted-foreground">Tomorrow, 9:00 AM</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <MessageSquareIcon className="mr-2 h-4 w-4 text-blue-500" />
+                <div className="ml-4 space-y-1">
+                  <p className="text-sm font-medium">Team meeting</p>
+                  <p className="text-sm text-muted-foreground">Tomorrow, 2:00 PM</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  );
+  )
 }

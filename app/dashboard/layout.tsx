@@ -3,23 +3,34 @@ import { ReactNode } from "react";
 import Logo from "@/public/logos/BlackLogo-Text.png";
 import Image from "next/image";
 import { DashboardItems } from "@/components/dashboard/DashboardItems";
-import { CircleUser, DollarSign, Globe, Home, Users } from "lucide-react";
-import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { Calendar, ChartNoAxesCombined, Globe, LayoutDashboard, Shirt, ShoppingCart, Unplug, Users } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
 export const navLinks = [
   {
     name: "Dashboard",
     href: "/dashboard",
-    icon: Home,
+    icon: LayoutDashboard,
+  },
+  {
+    name: "Calendar",
+    href: "/dashboard/calendar",
+    icon: Calendar,
+  },
+  {
+    name: "Products",
+    href: "/dashboard/products",
+    icon: Shirt,
+  },
+  {
+    name: "Orders",
+    href: "/dashboard/orders",
+    icon: ShoppingCart,
+  },
+  {
+    name: "Customers",
+    href: "/dashboard/customers",
+    icon: Users,
   },
   {
     name: "Sites",
@@ -27,9 +38,14 @@ export const navLinks = [
     icon: Globe,
   },
   {
-    name: "Pricing",
-    href: "/dashboard/pricing",
-    icon: DollarSign,
+    name: "Analytics & Reports",
+    href: "/dashboard/analytics",
+    icon: ChartNoAxesCombined,
+  },
+  {
+    name: "Integrations",
+    href: "/dashboard/integrations",
+    icon: Unplug,
   },
   {
     name: "Organization",
