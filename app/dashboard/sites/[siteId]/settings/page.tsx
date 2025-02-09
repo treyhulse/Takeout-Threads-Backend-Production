@@ -1,6 +1,6 @@
 import { DeleteSite } from "@/app/actions";
-import { UploadImageForm } from "@/app/components/dashboard/forms/UploadImageForm";
-import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
+import { UploadImageForm } from "@/components/dashboard/forms/UploadImageForm";
+import { SubmitButton } from "@/components/dashboard/SubmitButtons";
 import { Button } from "@/components/ui/button";
 import {
   Card,

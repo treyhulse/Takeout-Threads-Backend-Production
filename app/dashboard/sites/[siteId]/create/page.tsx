@@ -1,7 +1,7 @@
 "use client";
 
 import { CreatePostAction } from "@/app/actions";
-import TailwindEditor from "@/app/components/dashboard/EditorWrapper";
+import TailwindEditor from "@/components/dashboard/EditorWrapper";
 import { UploadDropzone } from "@/app/utils/UploadthingComponents";
 import { PostSchema } from "@/app/utils/zodSchemas";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ import { JSONContent } from "novel";
 import { useActionState, useState } from "react";
 import { toast } from "sonner";
 import slugify from "react-slugify";
-import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
+import { SubmitButton } from "@/components/dashboard/SubmitButtons";
 
 // This is a Server Component
 export default function ArticleCreationPage({

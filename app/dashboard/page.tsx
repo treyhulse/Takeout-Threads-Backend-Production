@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { EmptyState } from "../components/dashboard/EmptyState";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import prisma from "../utils/db";
 import { requireUser } from "../utils/requireUser";
 import SitesRoute from "./sites/page";

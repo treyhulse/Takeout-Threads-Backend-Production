@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ReactNode } from "react";
-import Logo from "@/public/logo.svg";
+import Logo from "@/public/logos/BlackLogo-Text.png";
 import Image from "next/image";
-import { DashboardItems } from "../components/dashboard/DashboardItems";
+import { DashboardItems } from "@/components/dashboard/DashboardItems";
 import { CircleUser, DollarSign, Globe, Home } from "lucide-react";
-import { ThemeToggle } from "../components/dashboard/ThemeToggle";
+import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,13 +39,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Image src={Logo} alt="Logo" className="size-8" />
-
-              <h3 className="text-2xl">
-                Blog<span className="text-primary">Marshal</span>
-              </h3>
+              <Image 
+              src={Logo} 
+              alt="Takeout Threads" 
+              width={100}
+              height={100}
+               />
             </Link>
           </div>
+
+
+
 
           <div className="flex-1">
             <nav className="grid items-start px-2  font-medium lg:px-4">
@@ -73,6 +77,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <LogoutLink>Log out</LogoutLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="https://billing.stripe.com/p/login/7sIbKj5DHb1P2sw8ww" target="_blank">Manage Subscription</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

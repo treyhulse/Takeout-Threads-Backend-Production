@@ -1,5 +1,5 @@
 import { DeletePost } from "@/app/actions";
-import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
+import { SubmitButton } from "@/components/dashboard/SubmitButtons";
 import { Button } from "@/components/ui/button";
 import {
   Card,

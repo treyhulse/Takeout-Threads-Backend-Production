@@ -1,4 +1,4 @@
-import { EmptyState } from "@/app/components/dashboard/EmptyState";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import prisma from "@/app/utils/db";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

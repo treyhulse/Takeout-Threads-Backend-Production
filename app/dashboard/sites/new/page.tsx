@@ -17,7 +17,7 @@ import { useActionState } from "react";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { siteSchema } from "@/app/utils/zodSchemas";
-import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
+import { SubmitButton } from "@/components/dashboard/SubmitButtons";
 
 export default function NewSiteRoute() {
   const [lastResult, action] = useActionState(CreateSiteAction, undefined);
