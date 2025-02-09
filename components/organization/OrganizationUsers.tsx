@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createOrganizationUser } from "@/lib/kinde/kindeActions";
+import { createOrganizationUser } from "@/lib/kinde/actions/organization";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle } from "lucide-react";
 import Image from "next/image";

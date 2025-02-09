@@ -38,7 +38,6 @@ const OrganizationSwitcher: React.FC = () => {
       `/api/auth/login?org_code=${orgId}&post_login_redirect_url=/dashboard`
     );
   };
-
   return (
     <div className="w-56">
       <DropdownMenu>
@@ -71,8 +70,8 @@ const OrganizationSwitcher: React.FC = () => {
       </DropdownMenu>
 
       {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white p-6 rounded-md w-80">
+        <div className="fixed inset-0 flex items-center justify-center bg-background/50 z-50">
+          <div className="bg-background p-6 rounded-md w-80 border border-border">
             <h3 className="text-lg font-medium mb-4">Create New Organization</h3>
             <input
               type="text"
@@ -90,17 +89,19 @@ const OrganizationSwitcher: React.FC = () => {
               </button>
               {newOrgName ? (
                 <CreateOrgLink orgName={newOrgName}>
-                  <button className="px-4 py-2 rounded-md bg-blue-500 text-white">
+                  <button className="px-4 py-2 rounded-md bg-primary text-primary-foreground">
                     Create
                   </button>
                 </CreateOrgLink>
+
               ) : (
                 <button
                   disabled
-                  className="px-4 py-2 rounded-md bg-blue-300 text-white"
+                  className="px-4 py-2 rounded-md bg-primary/30 text-primary-foreground"
                 >
                   Create
                 </button>
+
               )}
             </div>
           </div>

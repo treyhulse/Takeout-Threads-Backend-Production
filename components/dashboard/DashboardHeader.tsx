@@ -10,10 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import OrganizationSwitcher from "@/components/dashboard/OrganizationSwitcher";
+import { OrganizationLogo } from "@/components/OrganizationLogo";
+
 
 export function DashboardHeader() {
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+      <OrganizationLogo orgCode="org_176dba100cf97" />
+      
       <div className="ml-auto flex items-center gap-x-5">
         <ThemeToggle />
         <OrganizationSwitcher />

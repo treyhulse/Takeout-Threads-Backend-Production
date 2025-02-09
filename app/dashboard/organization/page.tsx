@@ -3,7 +3,7 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrganizationInfo } from "@/components/organization/OrganizationInfo";
 import { OrganizationUsers } from "@/components/organization/OrganizationUsers";
-import { getOrganization, getOrganizationUsers } from "@/lib/kinde/kindeActions";
+import { getOrganization, getOrganizationUsers } from "@/lib/kinde/actions/organization";
 
 export default async function OrganizationPage() {
 

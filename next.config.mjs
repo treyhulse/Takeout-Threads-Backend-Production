@@ -17,9 +17,15 @@ const nextConfig = {
         hostname: "gravatar.com",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "takeoutthreads.kinde.com",
+        port: "",
+      },
     ],
   },
 };
+
 
 
 export default nextConfig;
