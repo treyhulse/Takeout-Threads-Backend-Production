@@ -28,6 +28,25 @@ export async function createOrganization(orgName: string, properties?: Record<st
   });
 }
 
+/**
+ * Delete an organization
+ * DELETE /api/v1/organization/{org_code}
+ */
+export async function deleteOrganization(orgCode: string) {
+  try {
+    const response = await kindeApiFetch(`/organization/${orgCode}`, {
+      method: 'DELETE',
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Delete Organization Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
 // Organization users actions
 
 /**

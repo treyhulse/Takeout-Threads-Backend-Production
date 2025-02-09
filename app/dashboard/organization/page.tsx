@@ -9,6 +9,7 @@ import {
 import { OrganizationLogo } from "@/components/OrganizationLogo";
 import { CopyButton } from "@/components/CopyButton";
 import OrganizationManagement from "@/components/dashboard/OrganizationManagement";
+import { DeleteOrganizationSection } from "@/components/dashboard/DeleteOrganizationSection";
 
 export default async function OrganizationPage() {
   const session = await getKindeServerSession();
@@ -60,6 +61,10 @@ export default async function OrganizationPage() {
             orgDetails={orgDetailsWithProperties}
             orgCode={org.orgCode}
           />
+
+          <div className="pt-8 border-t">
+            <DeleteOrganizationSection />
+          </div>
         </div>
       </div>
     );
