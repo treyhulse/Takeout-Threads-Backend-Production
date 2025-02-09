@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { OrdersChart } from "./OrdersChart"
+import { OrdersChart } from "@/components/dashboard/OrdersChart"
 
 const mockData = [
   { month: 'Jan', orders: 65 },

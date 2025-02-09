@@ -1,6 +1,9 @@
 import React from "react";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OrganizationInfo } from "@/components/organization/OrganizationInfo";
+import { OrganizationUsers } from "@/components/organization/OrganizationUsers";
+import { getOrganization, getOrganizationUsers } from "@/lib/kinde/kindeActions";
 
 export default async function OrganizationPage() {
 
@@ -30,98 +33,22 @@ export default async function OrganizationPage() {
   const apiUrl = `${normalizedBaseUrl}/organization?code=${orgCode}`;
 
   try {
-    const res = await fetch(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${apiSecret}`,
-      },
-      cache: "no-store",
-    });
+    // Use kindeActions functions instead of direct fetch calls
+    const [orgDetails, usersData] = await Promise.all([
+      getOrganization(org.orgCode),
+      getOrganizationUsers(org.orgCode)
+    ]);
 
-    if (!res.ok) {
-      console.error("OrganizationPage: Error fetching organization details:", res.statusText);
-      return (
-        <div className="p-4">
-          <h1 className="text-2xl font-bold mb-4">Organization Management</h1>
-          <p>Error fetching organization details. Please try again later.</p>
-        </div>
-      );
-    }
-
-    const orgDetails = await res.json();
-
-    // Fetch organization users with query parameters
-    const usersRes = await fetch(
-      `${normalizedBaseUrl}/organizations/${orgCode}/users`, {
-      headers: {
-        Authorization: `Bearer ${apiSecret}`,
-      },
-      cache: "no-store",
-    });
-
-    if (!usersRes.ok) {
-      console.error("OrganizationPage: Error fetching organization users:", usersRes.statusText);
-    }
-
-    const usersData = await usersRes.json();
-    
-    // Update the user display to show more fields based on the API response
     return (
       <div className="container mx-auto py-8 max-w-7xl">
         <h1 className="text-3xl font-bold mb-8">Organization Management</h1>
         
         <div className="space-y-8">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Organization Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 gap-6">
-                {Object.entries(orgDetails).map(([key, value]) => (
-                  <div key={key} className="space-y-1">
-                    <p className="text-sm text-muted-foreground font-medium capitalize">
-                      {key.replace(/_/g, ' ')}
-                    </p>
-                    <p className="text-sm">
-                      {value ? value.toString() : "-"}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Organization Users</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-4">
-                {usersData?.organization_users?.map((user: any) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      {user.picture && (
-                        <img 
-                          src={user.picture} 
-                          alt={user.full_name} 
-                          className="h-10 w-10 rounded-full"
-                        />
-                      )}
-                      <div>
-                        <p className="font-medium">{user.email}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {user.first_name} {user.last_name}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end text-sm text-muted-foreground">
-                      <p>Joined: {new Date(user.joined_on).toLocaleDateString()}</p>
-                      <p>Roles: {user.roles?.join(", ") || "None"}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <OrganizationInfo orgDetails={orgDetails} />
+          <OrganizationUsers 
+            users={usersData?.organization_users || []} 
+            orgCode={org.orgCode}
+          />
         </div>
       </div>
     );

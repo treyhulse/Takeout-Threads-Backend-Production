@@ -1,3 +1,5 @@
+'use server'
+
 // kindeActions.ts
 // This module exports functions for all the Kinde organization-related actions.
 // It leverages the kindeApiFetch() function from kindeApiClient.ts.
@@ -8,7 +10,7 @@ import { kindeApiFetch } from "./kindeApiClient";
 
 /**
  * Retrieves details for a specific organization.
- * GET /organization?code=<orgCode>
+ * GET /api/v1/organization?code=<orgCode>
  */
 export async function getOrganization(orgCode: string) {
   return kindeApiFetch(`/organization?code=${orgCode}`);
@@ -92,10 +94,10 @@ export async function deleteOrganizationLogo(orgCode: string) {
 
 /**
  * Retrieves all users of an organization.
- * GET /organization/users?code=<orgCode>
+ * GET /api/v1/organizations/{org_code}/users
  */
 export async function getOrganizationUsers(orgCode: string) {
-  return kindeApiFetch(`/organization/users?code=${orgCode}`);
+  return kindeApiFetch(`/organizations/${orgCode}/users`);
 }
 
 /**
@@ -124,4 +126,52 @@ export async function updateOrganizationUser(
     method: "PATCH",
     body: JSON.stringify({ code: orgCode, userId, ...updates }),
   });
+}
+
+/**
+ * Creates a new user in Kinde and adds them to an organization
+ * POST /api/v1/user
+ */
+export async function createOrganizationUser(orgCode: string, userData: {
+  first_name: string;
+  last_name: string;
+  email: string;
+}) {
+  const requestBody = {
+    profile: {
+      given_name: userData.first_name,
+      family_name: userData.last_name,
+    },
+    organization_code: orgCode,
+    identities: [
+      {
+        type: "email",
+        details: {
+          email: userData.email
+        }
+      }
+    ]
+  };
+
+  console.log('Create User Request:', {
+    url: '/user',
+    method: 'POST',
+    body: requestBody
+  });
+
+  try {
+    const response = await kindeApiFetch(`/user`, {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+    });
+    
+    console.log('Create User Response:', response);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Create User Error:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    };
+  }
 }
