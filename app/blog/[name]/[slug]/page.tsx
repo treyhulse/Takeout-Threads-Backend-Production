@@ -1,4 +1,4 @@
-import { RenderArticle } from "@/app/components/dashboard/RenderArticle";
+import { RenderArticle } from "@/components/dashboard/RenderArticle";
 import prisma from "@/app/utils/db";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";

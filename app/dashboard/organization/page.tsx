@@ -48,7 +48,6 @@ export default async function OrganizationPage() {
     }
 
     const orgDetails = await res.json();
-    console.log("OrganizationPage: Fetched organization details:", orgDetails);
 
     // Fetch organization users with query parameters
     const usersRes = await fetch(
