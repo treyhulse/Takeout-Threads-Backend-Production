@@ -85,3 +85,66 @@ export async function createOrganizationUser(orgCode: string, userData: {
     };
   }
 }
+
+/**
+ * Retrieves roles for a specific user in an organization
+ * GET /api/v1/organizations/{org_code}/users/{user_id}/roles
+ */
+export async function getUserRoles(orgCode: string, userId: string) {
+  try {
+    const response = await kindeApiFetch(`/organizations/${orgCode}/users/${userId}/roles`);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Get User Roles Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
+/**
+ * Assigns a role to a user in an organization
+ * POST /api/v1/organizations/{org_code}/users/{user_id}/roles
+ */
+export async function addUserRole(orgCode: string, userId: string, roleId: string) {
+  try {
+    const response = await kindeApiFetch(
+      `/organizations/${orgCode}/users/${userId}/roles`,
+      {
+        method: "POST",
+        body: JSON.stringify({ role_id: roleId }),
+      }
+    );
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Add User Role Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
+/**
+ * Removes a role from a user in an organization
+ * DELETE /api/v1/organizations/{org_code}/users/{user_id}/roles/{role_id}
+ */
+export async function removeUserRole(orgCode: string, userId: string, roleId: string) {
+  try {
+    const response = await kindeApiFetch(
+      `/organizations/${orgCode}/users/${userId}/roles/${roleId}`,
+      {
+        method: "DELETE",
+      }
+    );
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Remove User Role Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
