@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "npm install --legacy-peer-deps && prisma generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@conform-to/react": "^1.2.2",
