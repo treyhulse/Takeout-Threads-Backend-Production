@@ -9,13 +9,13 @@ interface OrganizationLogoProps {
   orgCode: string;
 }
 
-export function OrganizationLogo({ className }: OrganizationLogoProps) {
+export function OrganizationLogo({ className, orgCode }: OrganizationLogoProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   const logoUrl = isDark 
-    ? "https://takeoutthreads.kinde.com/logo_dark?p_org_code=org_176dba100cf97"
-    : "https://takeoutthreads.kinde.com/logo?p_org_code=org_176dba100cf97";
+    ? `https://takeoutthreads.kinde.com/logo_dark?p_org_code=${orgCode}`
+    : `https://takeoutthreads.kinde.com/logo?p_org_code=${orgCode}`;
 
   return (
     <Image

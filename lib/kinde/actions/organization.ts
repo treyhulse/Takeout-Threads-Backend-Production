@@ -148,3 +148,40 @@ export async function removeUserRole(orgCode: string, userId: string, roleId: st
   }
 }
 
+/**
+ * Get organization properties
+ * GET /api/v1/organizations/{org_code}/properties
+ */
+export async function getOrganizationProperties(orgCode: string) {
+  try {
+    const response = await kindeApiFetch(`/organizations/${orgCode}/properties`);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Get Organization Properties Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
+/**
+ * Update organization properties
+ * PATCH /api/v1/organizations/{org_code}/properties
+ */
+export async function updateOrganizationProperties(orgCode: string, properties: Record<string, any>) {
+  try {
+    const response = await kindeApiFetch(`/organizations/${orgCode}/properties`, {
+      method: 'PATCH',
+      body: JSON.stringify({ properties }),
+    });
+    return { success: true, data: response };
+  } catch (error) {
+    console.error('Update Organization Properties Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+}
+
