@@ -11,14 +11,19 @@ import { Button } from "@/components/ui/button";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import OrganizationSwitcher from "@/components/dashboard/OrganizationSwitcher";
 import { OrganizationProvider } from "@/components/dashboard/OrganizationProvider";
+import { Searchbar } from "@/components/dashboard/Searchbar";
+import { Notifications } from "@/components/dashboard/Notifications";
 
 export function DashboardHeader() {
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
       <OrganizationProvider />
       
+      <div className="flex-1 ml-4">
+        <Searchbar />
+      </div>
+
       <div className="ml-auto flex items-center gap-x-5">
-        <ThemeToggle />
         <OrganizationSwitcher />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -40,6 +45,8 @@ export function DashboardHeader() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <Notifications />
+        <ThemeToggle />
       </div>
     </header>
   );

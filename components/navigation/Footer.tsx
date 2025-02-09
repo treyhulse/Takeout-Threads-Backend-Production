@@ -1,5 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
+import { ThemeToggle } from "../dashboard/ThemeToggle"
 
 export function Footer() {
   return (
@@ -18,6 +19,7 @@ export function Footer() {
               </Link>
             </div>
             <p className="text-sm text-gray-500">Empowering print shops with modern apparel customization solutions</p>
+            <ThemeToggle />
           </div>
           <div className="space-y-4">
             <h4 className="font-semibold text-blue-950">Product</h4>
