@@ -59,6 +59,7 @@ model Items {
   sku               String
   type              String
   variations        Json?
+  price             Decimal?
   global_identifier String?
   status            ItemStatus @default(DRAFT)
   metadata          Json?

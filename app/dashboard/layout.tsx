@@ -4,7 +4,7 @@ import LightLogo from "@/public/logos/BlackLogo-Text.png";
 import DarkLogo from "@/public/logos/WhiteLogo-Text.png";
 import Image from "next/image";
 import { DashboardItems } from "@/components/dashboard/DashboardItems";
-import { Calendar, ChartNoAxesCombined, Globe, LayoutDashboard, Shirt, ShoppingCart, Truck, Unplug, Users } from "lucide-react";
+import { Calendar, ChartNoAxesCombined, File, Globe, LayoutDashboard, Shirt, ShoppingCart, Truck, Unplug, Users } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
 
@@ -25,9 +25,9 @@ export const navLinks = [
     icon: Shirt,
   },
   {
-    name: "Orders",
-    href: "/dashboard/orders",
-    icon: ShoppingCart,
+    name: "Transactions",
+    href: "/dashboard/transactions",
+    icon: File,
   },
   {
     name: "Customers",

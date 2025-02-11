@@ -6,6 +6,7 @@ export type Item = {
   sku: string
   type: string
   variations?: any
+  price?: number
   global_identifier?: string
   status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
   metadata?: any
