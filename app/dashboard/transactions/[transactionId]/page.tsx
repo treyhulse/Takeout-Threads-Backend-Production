@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { ChevronLeft } from "lucide-react"
 import { TransactionItems } from "@/components/transactions/transaction-items"
 import { TransactionDetails } from "@/components/transactions/transaction-details"
 import { useEffect, useState } from "react"
@@ -30,6 +32,15 @@ export default function TransactionPage({
 
   return (
     <div className="p-6 space-y-6">
+      <Button
+        variant="ghost"
+        className="mb-4"
+        onClick={() => router.push('/dashboard/transactions')}
+      >
+        <ChevronLeft className="mr-2 h-4 w-4" />
+        Back to Transactions
+      </Button>
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { Package2, ArrowLeft, Edit, Trash } from "lucide-react"
+import { Package2, ChevronLeft, Edit, Trash } from "lucide-react"
 import { Item } from "@/types/items"
 import { getItemById, updateItem, deleteItem } from "@/lib/supabase/items"
 import { toast } from "sonner"
@@ -89,11 +89,17 @@ export default function ItemDetailsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <Button
+        variant="ghost"
+        className="mb-4"
+        onClick={() => router.push('/dashboard/items')}
+      >
+        <ChevronLeft className="mr-2 h-4 w-4" />
+        Back to Items
+      </Button>
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
               <Package2 className="h-6 w-6" />

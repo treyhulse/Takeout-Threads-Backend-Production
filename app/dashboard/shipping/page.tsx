@@ -7,9 +7,15 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { AddressModal } from "@/components/addresses/address-modal"
 import { AddressSelect } from "@/components/addresses/address-select"
+import { LocationModal } from "@/components/locations/location-modal"
+import { ParcelModal } from "@/components/parcels/parcel-modal"
+import { ParcelCommand } from "@/components/parcels/parcel-command"
+import { DimensionUnit, WeightUnit } from "@prisma/client"
+import { LocationCommand } from "@/components/locations/location-command"
 
 export default function ShippingPage() {
   const [fromAddress, setFromAddress] = useState({
+    id: '',
     name: '',
     street1: '',
     city: '',
@@ -28,10 +34,17 @@ export default function ShippingPage() {
   })
 
   const [parcel, setParcel] = useState({
+    id: '',
+    name: '',
+    description: '',
     length: '',
     width: '',
     height: '',
     weight: '',
+    length_unit: DimensionUnit.INCH,
+    width_unit: DimensionUnit.INCH,
+    depth_unit: DimensionUnit.INCH,
+    weight_unit: WeightUnit.OUNCE,
   })
 
   const handleCreateShipment = async () => {
@@ -50,6 +63,22 @@ export default function ShippingPage() {
     });
   };
 
+  const handleParcelSelect = (id: string, selectedParcel: any) => {
+    setParcel({
+      id,
+      name: selectedParcel.name,
+      description: selectedParcel.description,
+      length: selectedParcel.length.toString(),
+      width: selectedParcel.width.toString(),
+      height: selectedParcel.depth.toString(),
+      weight: selectedParcel.weight.toString(),
+      length_unit: selectedParcel.length_unit,
+      width_unit: selectedParcel.width_unit,
+      depth_unit: selectedParcel.depth_unit,
+      weight_unit: selectedParcel.weight_unit,
+    })
+  }
+
   return (
     <div className="container py-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -59,8 +88,25 @@ export default function ShippingPage() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">From Address</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">From Address</h2>
+            <LocationModal />
+          </div>
           <div className="space-y-4">
+            <LocationCommand
+              value={fromAddress.id}
+              onChange={(id, location) => {
+                setFromAddress({
+                  id,
+                  name: location.address.name || '',
+                  street1: location.address.street1,
+                  city: location.address.city,
+                  state: location.address.state,
+                  zip: location.address.zip,
+                  country: location.address.country,
+                })
+              }}
+            />
             <div>
               <Label htmlFor="from-name">Name</Label>
               <Input
@@ -107,7 +153,10 @@ export default function ShippingPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">To Address</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">To Address</h2>
+            <AddressModal />
+          </div>
           <div className="space-y-4">
             <AddressSelect onAddressSelect={handleAddressSelect} />
             
@@ -157,11 +206,19 @@ export default function ShippingPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Parcel Details</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Parcel Details</h2>
+            <ParcelModal />
+          </div>
           <div className="space-y-4">
+            <ParcelCommand
+              value={parcel.id}
+              onChange={handleParcelSelect}
+            />
+            
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="length">Length (in)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="length">Length ({parcel.length_unit.toLowerCase()})</Label>
                 <Input
                   id="length"
                   type="number"
@@ -169,8 +226,8 @@ export default function ShippingPage() {
                   onChange={(e) => setParcel({ ...parcel, length: e.target.value })}
                 />
               </div>
-              <div>
-                <Label htmlFor="width">Width (in)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="width">Width ({parcel.width_unit.toLowerCase()})</Label>
                 <Input
                   id="width"
                   type="number"
@@ -180,8 +237,8 @@ export default function ShippingPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="height">Height (in)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="height">Height ({parcel.depth_unit.toLowerCase()})</Label>
                 <Input
                   id="height"
                   type="number"
@@ -189,8 +246,8 @@ export default function ShippingPage() {
                   onChange={(e) => setParcel({ ...parcel, height: e.target.value })}
                 />
               </div>
-              <div>
-                <Label htmlFor="weight">Weight (oz)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="weight">Weight ({parcel.weight_unit.toLowerCase()})</Label>
                 <Input
                   id="weight"
                   type="number"

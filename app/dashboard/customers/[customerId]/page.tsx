@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import AddressTable from '@/components/addresses/address-table'
 import { AddressModal } from '@/components/addresses/address-modal'
 import prisma from '@/utils/db'
+import { ChevronLeft } from "lucide-react"
+import Link from "next/link"
 
 export default async function CustomerPage({
   params
@@ -63,6 +65,17 @@ export default async function CustomerPage({
 
   return (
     <div className="p-6 space-y-6">
+      <Button
+        variant="ghost"
+        className="mb-4"
+        asChild
+      >
+        <Link href="/dashboard/customers">
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Back to Customers
+        </Link>
+      </Button>
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">

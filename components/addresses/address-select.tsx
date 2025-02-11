@@ -20,6 +20,7 @@ import { getCustomerAddresses } from "@/lib/supabase/addresses";
 import { getCustomers } from "@/lib/supabase/customers";
 
 type Address = {
+  id: string;
   address_id: string;
   name: string | null;
   street1: string;
