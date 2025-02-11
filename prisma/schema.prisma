@@ -4,7 +4,7 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-// Commands to run: npx prisma generate  |  npx prisma migrate dev --name add_customers_and_addresses  |  npx prisma migrate deploy
+// Command to run: npx prisma migrate dev --name add_address_transactions
 
 
 
@@ -76,6 +76,9 @@ model Items {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  // Add this relation
+  TransactionItems  TransactionItems[]
+
   @@unique([org_id, sku])
 }
 
@@ -122,6 +125,9 @@ model Customers {
   shipping_address       Addresses? @relation("ShippingAddress", fields: [default_shipping_address], references: [address_id])
   billing_address        Addresses? @relation("BillingAddress", fields: [default_billing_address], references: [address_id])
 
+  // Add this relation
+  transactions     Transactions[]
+
   @@unique([org_id, customer_id])
 }
 
@@ -140,6 +146,8 @@ model Addresses {
   country       String
   zip           String
   verified      Boolean   @default(false)
+  valid         AddressValidationStatus @default(PENDING)
+  residential   Boolean?
   latitude      Float?
   longitude     Float?
   created_at    DateTime  @default(now())
@@ -150,7 +158,16 @@ model Addresses {
   shipping_for  Customers[] @relation("ShippingAddress")
   billing_for   Customers[] @relation("BillingAddress")
 
+  // Add this relation
+  locations       Locations[]
+
   @@unique([org_id, address_id])
+}
+
+enum AddressValidationStatus {
+  VALID
+  INVALID
+  PENDING
 }
 
 model Parcels {
@@ -170,4 +187,76 @@ model Parcels {
   updated_at DateTime @updatedAt
 
   @@unique([org_id, id])
+}
+
+model Locations {
+  id String @id @default(uuid())
+  org_id String
+  name String
+  description String
+  address_id String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  address Addresses @relation(fields: [address_id], references: [id])
+
+  @@unique([org_id, id])
+}
+
+enum TransactionType {
+  SALE
+  QUOTE
+  PURCHASE
+  RETURN
+  INVOICE
+  SUBSCRIPTION
+  CREDIT
+  REFUND
+  TRANSFER
+  JOB
+  ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  COMPLETED
+  CANCELED
+}
+
+model Transactions {
+  id              String           @id @default(uuid())
+  number          String           // Human readable ID
+  org_id          String
+  entity_id       String?          // Optional as not all transaction types need an entity
+  type            TransactionType
+  status          TransactionStatus @default(PENDING)
+  total           Decimal
+  tax             Decimal?
+  shipping        Decimal?
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+
+  // Relations
+  items           TransactionItems[]
+  customer        Customers?       @relation(fields: [entity_id], references: [id])
+
+  @@unique([org_id, number])
+}
+
+model TransactionItems {
+  id              String      @id @default(uuid())
+  transaction_id  String
+  item_id         String
+  quantity        Int
+  price_level     String?
+  unit_price      Decimal
+  discount        Decimal?
+  total           Decimal
+
+  // Relations
+  transaction     Transactions @relation(fields: [transaction_id], references: [id])
+  item           Items       @relation(fields: [item_id], references: [id])
+
+  @@unique([transaction_id, item_id])
 }
