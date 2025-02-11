@@ -4,6 +4,10 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// Commands to run: npx prisma generate  |  npx prisma migrate dev --name add_customers_and_addresses  |  npx prisma migrate deploy
+
+
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -24,41 +28,7 @@ model User {
 
   createdAt DateTime @default(now())
 
-  Site  Site[]
-  posts Post[]
-
   Subscription Subscription?
-}
-
-model Site {
-  id           String   @id @default(uuid())
-  name         String
-  description  String
-  subdirectory String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  imageUrl String?
-  User     User?   @relation(fields: [userId], references: [id])
-  userId   String?
-  posts    Post[]
-}
-
-model Post {
-  id String @id @default(uuid())
-
-  title            String
-  articleContent   Json
-  smallDescription String
-  image            String
-  slug             String @unique
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?
-  Site      Site?    @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  siteId    String?
 }
 
 model Subscription {
@@ -73,4 +43,113 @@ model Subscription {
 
   User   User?   @relation(fields: [userId], references: [id])
   userId String? @unique
+}
+
+
+
+
+
+// HERE IS WHERE I START TO BRANCH OFF
+
+model Items {
+  id                String   @id @default(uuid())
+  org_id            String
+  name              String
+  description       String?
+  sku               String
+  type              String
+  variations        Json?
+  global_identifier String?
+  status            ItemStatus @default(DRAFT)
+  metadata          Json?
+  notes             String?
+  unit_of_measure   String
+  weight            Decimal?
+  weight_unit       WeightUnit?
+  length            Decimal?
+  length_unit       DimensionUnit?
+  width             Decimal?
+  width_unit        DimensionUnit?
+  depth             Decimal?
+  depth_unit        DimensionUnit?
+  tags              Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([org_id, sku])
+}
+
+enum ItemStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+enum WeightUnit {
+  OUNCE
+  POUND
+}
+
+enum DimensionUnit {
+  INCH
+  CENTIMETER
+  FOOT
+}
+
+model Customers {
+  id                      String    @id @default(uuid())
+  customer_id             String
+  org_id                 String
+  first_name             String?
+  last_name              String?
+  company_name           String?
+  email                  String
+  alt_email              String?
+  phone                  String?
+  alt_phone              String?
+  account_rep            String?
+  comments               String?
+  last_order_date        DateTime?
+  customer_category      String?
+  notes                  String?   @db.Text
+  default_shipping_address String?
+  default_billing_address  String?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  // Relations
+  addresses              Addresses[]
+  shipping_address       Addresses? @relation("ShippingAddress", fields: [default_shipping_address], references: [address_id])
+  billing_address        Addresses? @relation("BillingAddress", fields: [default_billing_address], references: [address_id])
+
+  @@unique([org_id, customer_id])
+}
+
+model Addresses {
+  id            String    @id @default(uuid())
+  address_id    String    @unique @default(uuid())
+  org_id        String
+  customer_id   String
+  easypost_id   String?   // Added for EasyPost integration
+  name          String?
+  company       String?   // Added for business addresses
+  street1       String
+  street2       String?
+  city          String
+  state         String
+  country       String
+  zip           String
+  phone         String?   // Added for shipping purposes
+  email         String?   // Added for shipping notifications
+  verified      Boolean   @default(false)  // Changed from valid to verified
+  coordinates   Json?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Relations
+  customer      Customers @relation(fields: [customer_id], references: [id])
+  shipping_for  Customers[] @relation("ShippingAddress")
+  billing_for   Customers[] @relation("BillingAddress")
+
+  @@unique([org_id, address_id])
 }
