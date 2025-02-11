@@ -5,6 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CustomerDetails } from "@/components/customers/customer-details"
 import { CustomerOrders } from "@/components/customers/customer-orders"
 import { Button } from "@/components/ui/button"
+import AddressTable from '@/components/addresses/address-table'
+import { AddressModal } from '@/components/addresses/address-modal'
+import prisma from '@/utils/db'
 
 export default async function CustomerPage({
   params
@@ -25,6 +28,38 @@ export default async function CustomerPage({
     alt_email: customerData.alt_email || '',
     phone: customerData.phone || ''
   }
+
+  // Fetch addresses for this specific customer
+  const addresses = await prisma.addresses.findMany({
+    where: {
+      customer_id: customer.id
+    },
+    select: {
+      id: true,
+      address_id: true,
+      name: true,
+      street1: true,
+      street2: true,
+      city: true,
+      state: true,
+      zip: true,
+      country: true,
+      verified: true,
+      valid: true,
+      residential: true,
+      easypost_id: true,
+      customer: {
+        select: {
+          first_name: true,
+          last_name: true,
+          company_name: true,
+        }
+      }
+    },
+    orderBy: {
+      created_at: 'desc',
+    },
+  })
 
   return (
     <div className="p-6 space-y-6">
@@ -57,11 +92,12 @@ export default async function CustomerPage({
         </TabsContent>
         <TabsContent value="addresses">
           <Card>
-              <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Addresses</CardTitle>
+              <AddressModal customerId={customer.id} />
             </CardHeader>
             <CardContent>
-              <Button>Add Address</Button>
+              <AddressTable addresses={addresses} />
             </CardContent>
           </Card>
         </TabsContent>

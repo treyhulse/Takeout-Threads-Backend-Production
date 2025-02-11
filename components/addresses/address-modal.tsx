@@ -41,11 +41,15 @@ type FormData = {
   zip: string;
 };
 
-export function AddressModal() {
+type AddressModalProps = {
+  customerId?: string
+}
+
+export function AddressModal({ customerId }: AddressModalProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<string>("");
+  const [selectedCustomer, setSelectedCustomer] = useState<string>(customerId || '');
 
   const {
     register,
@@ -56,6 +60,7 @@ export function AddressModal() {
 
   useEffect(() => {
     async function fetchCustomers() {
+      if (customerId) return // Skip fetching if customerId is provided
       try {
         const result = await getCustomers();
         if (result.error) throw new Error(result.error);
@@ -65,10 +70,10 @@ export function AddressModal() {
       }
     }
 
-    if (open) {
+    if (open && !customerId) {
       fetchCustomers();
     }
-  }, [open]);
+  }, [open, customerId]);
 
   const onSubmit = async (data: FormData) => {
     if (!selectedCustomer) {
@@ -116,31 +121,33 @@ export function AddressModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Create Address</Button>
+        <Button variant="outline">Add Address</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Address</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="customer">Select Customer</Label>
-            <Select
-              value={selectedCustomer}
-              onValueChange={setSelectedCustomer}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a customer" />
-              </SelectTrigger>
-              <SelectContent>
-                {customers.map((customer) => (
-                  <SelectItem key={customer.id} value={customer.id}>
-                    {getCustomerDisplayName(customer)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!customerId && (
+            <div className="space-y-2">
+              <Label htmlFor="customer">Select Customer</Label>
+              <Select
+                value={selectedCustomer}
+                onValueChange={setSelectedCustomer}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a customer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {customers.map((customer) => (
+                    <SelectItem key={customer.id} value={customer.id}>
+                      {getCustomerDisplayName(customer)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>

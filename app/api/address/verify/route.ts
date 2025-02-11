@@ -65,7 +65,6 @@ export async function POST(request: Request) {
       where: { id: address.id },
       data: { 
         verified: true,
-        
         valid: isValid ? 'VALID' : 'INVALID',
         residential: result.residential ?? null,
         easypost_id: result.id,
