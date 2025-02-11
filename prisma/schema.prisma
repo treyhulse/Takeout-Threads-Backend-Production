@@ -152,3 +152,22 @@ model Addresses {
 
   @@unique([org_id, address_id])
 }
+
+model Parcels {
+  id String @id @default(uuid())
+  org_id String
+  name String
+  description String
+  length Decimal
+  length_unit DimensionUnit
+  width Decimal
+  width_unit DimensionUnit
+  depth Decimal
+  depth_unit DimensionUnit
+  weight Decimal
+  weight_unit WeightUnit
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([org_id, id])
+}

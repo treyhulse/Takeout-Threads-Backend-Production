@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { AddressModal } from "@/components/addresses/address-modal"
+import { AddressSelect } from "@/components/addresses/address-select"
 
 export default function ShippingPage() {
   const [fromAddress, setFromAddress] = useState({
@@ -37,6 +38,17 @@ export default function ShippingPage() {
     // TODO: Implement EasyPost API integration
     console.log('Creating shipment...', { fromAddress, toAddress, parcel })
   }
+
+  const handleAddressSelect = (address: any) => {
+    setToAddress({
+      name: address.name || '',
+      street1: address.street1,
+      city: address.city,
+      state: address.state,
+      zip: address.zip,
+      country: address.country,
+    });
+  };
 
   return (
     <div className="container py-6 space-y-6">
@@ -97,6 +109,8 @@ export default function ShippingPage() {
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">To Address</h2>
           <div className="space-y-4">
+            <AddressSelect onAddressSelect={handleAddressSelect} />
+            
             <div>
               <Label htmlFor="to-name">Name</Label>
               <Input
