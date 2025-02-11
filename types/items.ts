@@ -6,19 +6,19 @@ export type Item = {
   sku: string
   type: string
   variations?: any
-  price?: number
+  price: string | null
   global_identifier?: string
   status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
   metadata?: any
   notes?: string
   unit_of_measure: string
-  weight?: number
+  weight: string | null
   weight_unit?: 'OUNCE' | 'POUND'
-  length?: number
+  length: string | null
   length_unit?: 'INCH' | 'CENTIMETER' | 'FOOT'
-  width?: number
+  width: string | null
   width_unit?: 'INCH' | 'CENTIMETER' | 'FOOT'
-  depth?: number
+  depth: string | null
   depth_unit?: 'INCH' | 'CENTIMETER' | 'FOOT'
   tags?: string[]
   createdAt: Date

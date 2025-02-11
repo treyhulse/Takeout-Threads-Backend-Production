@@ -31,8 +31,9 @@ const productFormSchema = z.object({
   type: z.string().min(1, "Type is required"),
   unit_of_measure: z.string().min(1, "Unit of measure is required"),
   status: z.enum(["ACTIVE", "DRAFT", "ARCHIVED"]),
-  weight: z.coerce.number().optional(),
+  weight: z.string().optional(),
   weight_unit: z.enum(["OUNCE", "POUND"]).optional(),
+  price: z.string().optional(),
 })
 
 type ProductFormValues = z.infer<typeof productFormSchema>

@@ -34,15 +34,17 @@ export default function ProductsPage() {
         description: item.description ?? undefined,
         global_identifier: item.global_identifier ?? undefined,
         variations: item.variations ?? undefined,
+        price: item.price?.toString() ?? undefined,
         notes: item.notes ?? undefined,
-        weight: item.weight ?? undefined,
+        weight: item.weight?.toString() ?? undefined,
         weight_unit: item.weight_unit ?? undefined,
-        length: item.length ?? undefined,
-        width: item.width ?? undefined,
-        depth: item.depth ?? undefined,
+        length: item.length?.toString() ?? undefined,
+        width: item.width?.toString() ?? undefined,
+        depth: item.depth?.toString() ?? undefined,
         length_unit: item.length_unit ?? undefined,
         width_unit: item.width_unit ?? undefined,
         depth_unit: item.depth_unit ?? undefined,
+        tags: item.tags ?? undefined,
       })) as Item[]
       setProducts(formattedData)
     } catch (error) {

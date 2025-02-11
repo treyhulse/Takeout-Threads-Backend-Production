@@ -5,6 +5,7 @@ import { Item } from "@/types/items"
 import { revalidatePath } from "next/cache"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { DimensionUnit, WeightUnit } from "@prisma/client"
+import { Decimal } from "@prisma/client/runtime/library"
 
 export async function getItems() {
   try {
@@ -43,8 +44,12 @@ export async function createItem(data: Partial<Item>) {
       description: data.description,
       status: data.status || 'DRAFT',
       org_id: org.orgCode,
-      ...(data.weight && { weight: data.weight }),
+      ...(data.price && { price: new Decimal(data.price) }),
+      ...(data.weight && { weight: new Decimal(data.weight) }),
       ...(data.weight_unit && { weight_unit: data.weight_unit as WeightUnit }),
+      ...(data.length && { length: new Decimal(data.length) }),
+      ...(data.width && { width: new Decimal(data.width) }),
+      ...(data.depth && { depth: new Decimal(data.depth) }),
       ...(data.length_unit && { length_unit: data.length_unit as DimensionUnit }),
       ...(data.width_unit && { width_unit: data.width_unit as DimensionUnit }),
       ...(data.depth_unit && { depth_unit: data.depth_unit as DimensionUnit }),
