@@ -139,8 +139,6 @@ model Addresses {
   state         String
   country       String
   zip           String
-  phone         String?
-  email         String?
   verified      Boolean   @default(false)
   latitude      Float?
   longitude     Float?

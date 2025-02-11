@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { AddressModal } from "@/components/addresses/address-modal"
 
 export default function ShippingPage() {
   const [fromAddress, setFromAddress] = useState({
@@ -39,7 +40,10 @@ export default function ShippingPage() {
 
   return (
     <div className="container py-6 space-y-6">
-      <h1 className="text-4xl font-bold tracking-tight">Shipping</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-4xl font-bold tracking-tight">Shipping</h1>
+        <AddressModal />
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
