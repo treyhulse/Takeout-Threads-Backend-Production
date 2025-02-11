@@ -5,13 +5,15 @@ export interface TransactionItem {
   transaction_id: string
   item_id: string
   quantity: number
-  price_level?: string | null
+  price_level: string | null
   unit_price: number
-  discount?: number | null
+  discount: number | null
   total: number
   item: {
+    id: string
     name: string
     sku: string
+    unit_of_measure: string
   }
 }
 

@@ -15,40 +15,31 @@ export async function getTransactions() {
 
     const transactions = await prisma.transactions.findMany({
       where: {
-        org_id: org.orgCode,
+        org_id: org.orgCode
       },
       include: {
         items: {
           include: {
             item: {
               select: {
+                id: true,
                 name: true,
                 sku: true,
-              },
-            },
-          },
+                unit_of_measure: true
+              }
+            }
+          }
         },
-        customer: {
-          select: {
-            first_name: true,
-            last_name: true,
-            company_name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
+        customer: true
+      }
     })
 
-    // Convert Decimal to number
-    const formattedTransactions = transactions.map(transaction => ({
-      ...transaction,
-      total: Number(transaction.total),
-      tax: transaction.tax ? Number(transaction.tax) : null,
-      shipping: transaction.shipping ? Number(transaction.shipping) : null,
-      items: transaction.items.map(item => ({
+    const data = transactions.map(t => ({
+      ...t,
+      total: Number(t.total),
+      tax: t.tax ? Number(t.tax) : null,
+      shipping: t.shipping ? Number(t.shipping) : null,
+      items: t.items.map(item => ({
         ...item,
         total: Number(item.total),
         unit_price: Number(item.unit_price),
@@ -56,9 +47,8 @@ export async function getTransactions() {
       }))
     }))
 
-    return { data: formattedTransactions, error: null }
+    return { data, error: null }
   } catch (error) {
-    console.error('Error fetching transactions:', error)
     return { data: null, error: 'Failed to fetch transactions' }
   }
 }
