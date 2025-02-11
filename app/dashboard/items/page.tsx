@@ -19,11 +19,13 @@ import {
 import { ItemForm } from "@/components/items/item-form"
 import { toast } from "sonner"
 import { getItems, createItem, deleteItem } from "@/lib/supabase/items"
+import { useRouter } from "next/navigation"
 
 export default function ItemsPage() {
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const router = useRouter()
 
   const fetchItems = async () => {
     try {
@@ -169,7 +171,11 @@ export default function ItemsPage() {
                 </TableRow>
               ) : (
                 filteredItems.map((item) => (
-                  <TableRow key={item.id}>
+                  <TableRow 
+                    key={item.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => router.push(`/dashboard/items/${item.id}`)}
+                  >
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>{item.sku}</TableCell>
                     <TableCell>
@@ -184,18 +190,25 @@ export default function ItemsPage() {
                     <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                           <Button variant="ghost" size="icon">
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">Open menu</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Edit item</DropdownMenuItem>
-                          <DropdownMenuItem>View details</DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/dashboard/items/${item.id}`);
+                          }}>
+                            View details
+                          </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-destructive"
-                            onClick={() => handleDeleteItem(item.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteItem(item.id);
+                            }}
                           >
                             Delete item
                           </DropdownMenuItem>

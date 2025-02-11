@@ -1,0 +1,1 @@
+  (NULLIF(((current_setting('request.jwt.claims'::text, true))::json ->> 'sub'::text), ''::text) = org_id)

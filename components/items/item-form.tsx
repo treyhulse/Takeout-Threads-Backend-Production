@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
+import { Item } from "@/types/items"
 
 const itemFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -41,6 +42,7 @@ type ItemFormValues = z.infer<typeof itemFormSchema>
 interface ItemFormProps {
   initialData?: ItemFormValues
   onSubmit: (data: ItemFormValues) => Promise<void>
+  defaultValues?: Partial<Item>
 }
 
 export function ItemForm({ initialData, onSubmit }: ItemFormProps) {
