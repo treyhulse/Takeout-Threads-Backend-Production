@@ -19,6 +19,17 @@ interface CustomerDetailsProps {
 }
 
 export function CustomerDetails({ customer }: CustomerDetailsProps) {
+  const formattedCustomer = {
+    ...customer,
+    company_name: customer.company_name || undefined,
+    alt_email: customer.alt_email || undefined,
+    phone: customer.phone || undefined,
+    alt_phone: customer.alt_phone || undefined,
+    account_rep: customer.account_rep || undefined,
+    customer_category: customer.customer_category || undefined,
+    notes: customer.notes || undefined
+  }
+
   const handleUpdateCustomer = async (data: any) => {
     try {
       const { error } = await updateCustomer(customer.id, data)
@@ -44,7 +55,7 @@ export function CustomerDetails({ customer }: CustomerDetailsProps) {
               <DialogTitle>Edit Customer</DialogTitle>
             </DialogHeader>
             <CustomerForm 
-              initialData={customer} 
+              initialData={formattedCustomer} 
               onSubmit={handleUpdateCustomer}
             />
           </DialogContent>
