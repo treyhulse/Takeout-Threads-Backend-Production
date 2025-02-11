@@ -58,7 +58,7 @@ export async function createItem(data: Partial<Item>) {
     const item = await prisma.items.create({
       data: itemData,
     })
-    revalidatePath('/dashboard/products')
+    revalidatePath('/dashboard/items')
     return { data: item, error: null }
   } catch (error) {
     console.error('Error creating item:', error)
@@ -88,7 +88,7 @@ export async function updateItem(id: string, data: Partial<Item>) {
       },
       data: updateData,
     })
-    revalidatePath('/dashboard/products')
+    revalidatePath('/dashboard/items')
     return { data: item, error: null }
   } catch (error) {
     console.error('Error updating item:', error)
@@ -109,7 +109,7 @@ export async function deleteItem(id: string) {
         org_id: org.orgCode // Ensure users can only delete their org's items
       },
     })
-    revalidatePath('/dashboard/products')
+    revalidatePath('/dashboard/items')
     return { error: null }
   } catch (error) {
     console.error('Error deleting item:', error)

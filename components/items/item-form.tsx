@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 
-const productFormSchema = z.object({
+const itemFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   sku: z.string().min(1, "SKU is required"),
@@ -36,16 +36,16 @@ const productFormSchema = z.object({
   price: z.string().optional(),
 })
 
-type ProductFormValues = z.infer<typeof productFormSchema>
+type ItemFormValues = z.infer<typeof itemFormSchema>
 
-interface ProductFormProps {
-  initialData?: ProductFormValues
-  onSubmit: (data: ProductFormValues) => Promise<void>
+interface ItemFormProps {
+  initialData?: ItemFormValues
+  onSubmit: (data: ItemFormValues) => Promise<void>
 }
 
-export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormSchema),
+export function ItemForm({ initialData, onSubmit }: ItemFormProps) {
+  const form = useForm<ItemFormValues>({
+    resolver: zodResolver(itemFormSchema),
     defaultValues: initialData || {
       status: "DRAFT",
       type: "",
@@ -53,7 +53,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
     },
   })
 
-  const handleSubmit = async (data: ProductFormValues) => {
+  const handleSubmit = async (data: ItemFormValues) => {
     try {
       await onSubmit(data)
       form.reset()
@@ -73,7 +73,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="Product name" {...field} />
+                <Input placeholder="Item name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -101,7 +101,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="Product description" {...field} />
+                <Textarea placeholder="Item description" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -138,7 +138,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
             <FormItem>
               <FormLabel>Type</FormLabel>
               <FormControl>
-                <Input placeholder="Product type" {...field} />
+                <Input placeholder="Item type" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -160,7 +160,7 @@ export function ProductForm({ initialData, onSubmit }: ProductFormProps) {
         />
 
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Saving..." : "Save Product"}
+          {form.formState.isSubmitting ? "Saving..." : "Save Item"}
         </Button>
       </form>
     </Form>

@@ -20,8 +20,8 @@ export const navLinks = [
     icon: Calendar,
   },
   {
-    name: "Products",
-    href: "/dashboard/products",
+    name: "Items",
+    href: "/dashboard/items",
     icon: Shirt,
   },
   {

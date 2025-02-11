@@ -16,16 +16,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { ProductForm } from "@/components/products/product-form"
+import { ItemForm } from "@/components/items/item-form"
 import { toast } from "sonner"
 import { getItems, createItem, deleteItem } from "@/lib/supabase/items"
 
-export default function ProductsPage() {
-  const [products, setProducts] = useState<Item[]>([])
+export default function ItemsPage() {
+  const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
 
-  const fetchProducts = async () => {
+  const fetchItems = async () => {
     try {
       const { data, error } = await getItems()
       if (error) throw new Error(error)
@@ -46,64 +46,64 @@ export default function ProductsPage() {
         depth_unit: item.depth_unit ?? undefined,
         tags: item.tags ?? undefined,
       })) as Item[]
-      setProducts(formattedData)
+      setItems(formattedData)
     } catch (error) {
-      toast.error("Failed to fetch products")
+      toast.error("Failed to fetch items")
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchProducts()
+    fetchItems()
   }, [])
 
-  const handleCreateProduct = async (data: Partial<Item>) => {
+  const handleCreateItem = async (data: Partial<Item>) => {
     try {
       const { error } = await createItem(data)
       if (error) throw new Error(error)
-      fetchProducts()
-      toast.success("Product created successfully")
+      fetchItems()
+      toast.success("Item created successfully")
     } catch (error) {
-      toast.error("Failed to create product")
+      toast.error("Failed to create item")
     }
   }
 
-  const handleDeleteProduct = async (id: string) => {
+  const handleDeleteItem = async (id: string) => {
     try {
       const { error } = await deleteItem(id)
       if (error) throw new Error(error)
-      fetchProducts()
-      toast.success("Product deleted successfully")
+      fetchItems()
+      toast.success("Item deleted successfully")
     } catch (error) {
-      toast.error("Failed to delete product")
+      toast.error("Failed to delete item")
     }
   }
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.sku.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredItems = items.filter(item =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.sku.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">Manage your product catalog</p>
+          <h1 className="text-3xl font-bold tracking-tight">Items</h1>
+          <p className="text-muted-foreground">Manage your item catalog</p>
         </div>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
               <Package2 className="mr-2 h-4 w-4" />
-              Add Product
+              Add Item
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[625px]">
             <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
+              <DialogTitle>Add New Item</DialogTitle>
             </DialogHeader>
-            <ProductForm onSubmit={handleCreateProduct} />
+            <ItemForm onSubmit={handleCreateItem} />
           </DialogContent>
         </Dialog>
       </div>
@@ -115,7 +115,7 @@ export default function ProductsPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Search products..." 
+                  placeholder="Search items..." 
                   className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -161,27 +161,27 @@ export default function ProductsPage() {
                     </TableCell>
                   </TableRow>
                 ))
-              ) : filteredProducts.length === 0 ? (
+              ) : filteredItems.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center">
-                    No products found.
+                    No items found.
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.sku}</TableCell>
+                filteredItems.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.sku}</TableCell>
                     <TableCell>
                       <Badge variant={
-                        product.status === 'ACTIVE' ? "default" :
-                        product.status === 'DRAFT' ? "secondary" : "destructive"
+                        item.status === 'ACTIVE' ? "default" :
+                        item.status === 'DRAFT' ? "secondary" : "destructive"
                       }>
-                        {product.status.toLowerCase()}
+                        {item.status.toLowerCase()}
                       </Badge>
                     </TableCell>
-                    <TableCell>{product.type}</TableCell>
-                    <TableCell>{new Date(product.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{item.type}</TableCell>
+                    <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -191,13 +191,13 @@ export default function ProductsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Edit product</DropdownMenuItem>
+                          <DropdownMenuItem>Edit item</DropdownMenuItem>
                           <DropdownMenuItem>View details</DropdownMenuItem>
                           <DropdownMenuItem 
                             className="text-destructive"
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={() => handleDeleteItem(item.id)}
                           >
-                            Delete product
+                            Delete item
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
