@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog"
 import { ItemForm } from "@/components/items/item-form"
 import { ItemImages } from "@/components/items/item-images"
+import { PreviewButton } from "@/components/items/PreviewButton"
 
 export default function ItemDetailsPage() {
   const params = useParams()
@@ -125,28 +126,7 @@ export default function ItemDetailsPage() {
             </DialogContent>
           </Dialog>
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash className="h-4 w-4 mr-2" />
-                Delete Item
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the item.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteItem} className="bg-destructive">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <PreviewButton storeId={item.store_id} itemSku={item.sku} />
         </div>
       </div>
 

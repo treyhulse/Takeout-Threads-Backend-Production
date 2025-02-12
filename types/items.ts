@@ -35,4 +35,5 @@ export type Item = {
   front_image_url?: string
   back_image_url?: string
   images?: ItemImage[]
+  store_id: string
 } 
