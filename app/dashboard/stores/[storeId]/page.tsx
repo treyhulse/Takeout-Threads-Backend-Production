@@ -9,6 +9,7 @@ import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { CreatePageModal } from "@/components/modals/create-page-modal"
+import { CreateComponentModal } from "@/components/modals/create-component-modal"
 
 interface StorePageProps {
   params: {
@@ -159,25 +160,34 @@ export default async function StorePage({ params }: StorePageProps) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Store Pages</CardTitle>
-              <CreatePageModal storeId={store.id} orgId={store.org_id} />
+              <div className="flex items-center gap-2">
+                <CreateComponentModal orgId={store.org_id} />
+                <CreatePageModal storeId={store.id} orgId={store.org_id} />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {store.pages?.map((page) => (
-                  <Card key={page.id}>
-                    <CardHeader>
-                      <CardTitle className="text-base">{page.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {(page.metadata as { layout: Array<{ type: string }> })?.layout?.map((item, index) => (
-                          <Badge key={index} variant="outline">
-                            {item.type}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <Link 
+                    key={page.id} 
+                    href={`/dashboard/stores/${store.id}/pages/${page.id}`}
+                    className="block hover:opacity-70 transition-opacity"
+                  >
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base">{page.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {(page.metadata as { layout: Array<{ type: string }> })?.layout?.map((item, index) => (
+                            <Badge key={index} variant="outline">
+                              {item.type}
+                            </Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             </CardContent>

@@ -6,9 +6,8 @@ export interface Page {
   metadata: {
     layout: Array<{
       type: string
-      // Add other layout-specific properties as needed
     }>
-  } | null
+  } | null | any
 }
 
 export interface CreatePageParams {
