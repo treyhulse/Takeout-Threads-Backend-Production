@@ -82,7 +82,7 @@ export default function CustomersPage() {
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button>
+            <Button variant={customers.length < 2 ? 'pulse' : 'default'}>
               <Plus className="mr-2 h-4 w-4" />
               Add Customer
             </Button>

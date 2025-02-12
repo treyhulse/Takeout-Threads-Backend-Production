@@ -11,13 +11,12 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"; // shadcn dropdown-menu component
 import { PlusCircle } from "lucide-react";
-import { CreateOrgLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { OrganizationOnboarding } from "./OrganizationOnboarding";
 
 const OrganizationSwitcher: React.FC = () => {
   const { getClaim, getOrganization } = useKindeAuth();
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
-  const [newOrgName, setNewOrgName] = useState("");
 
   // Get the organizations claim from the ID token.
   const orgClaim = getClaim("organizations", "id_token");
@@ -38,6 +37,7 @@ const OrganizationSwitcher: React.FC = () => {
       `/api/auth/login?org_code=${orgId}&post_login_redirect_url=/dashboard`
     );
   };
+
   return (
     <div className="w-56">
       <DropdownMenu>
@@ -69,44 +69,10 @@ const OrganizationSwitcher: React.FC = () => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-background/50 z-50">
-          <div className="bg-background p-6 rounded-md w-80 border border-border">
-            <h3 className="text-lg font-medium mb-4">Create New Organization</h3>
-            <input
-              type="text"
-              placeholder="Organization Name"
-              value={newOrgName}
-              onChange={(e) => setNewOrgName(e.target.value)}
-              className="w-full p-2 border rounded-md mb-4"
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setModalOpen(false)}
-                className="px-4 py-2 rounded-md border"
-              >
-                Cancel
-              </button>
-              {newOrgName ? (
-                <CreateOrgLink orgName={newOrgName}>
-                  <button className="px-4 py-2 rounded-md bg-primary text-primary-foreground">
-                    Create
-                  </button>
-                </CreateOrgLink>
-
-              ) : (
-                <button
-                  disabled
-                  className="px-4 py-2 rounded-md bg-primary/30 text-primary-foreground"
-                >
-                  Create
-                </button>
-
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <OrganizationOnboarding 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+      />
     </div>
   );
 };

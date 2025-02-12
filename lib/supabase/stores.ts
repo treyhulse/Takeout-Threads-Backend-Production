@@ -111,4 +111,26 @@ export async function updateStore(id: string, data: {
     console.error('Error updating store:', error)
     return { data: null, error: 'Failed to update store' }
   }
+}
+
+export async function createInitialStore(orgId: string, orgName: string) {
+  try {
+    const store = await prisma.store.create({
+      data: {
+        org_id: orgId,
+        name: orgName,
+        subdomain: orgName
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, ''),
+        slogan: `Welcome to ${orgName}!`,
+      }
+    })
+
+    return { data: store, error: null }
+  } catch (error) {
+    console.error('Error creating initial store:', error)
+    return { data: null, error: 'Failed to create initial store' }
+  }
 } 

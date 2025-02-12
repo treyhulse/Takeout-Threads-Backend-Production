@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
 import { CreateTransactionModal } from "@/components/transactions/create-transaction-modal"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 export default function TransactionsPage() {
   const router = useRouter()
@@ -60,7 +61,20 @@ export default function TransactionsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
           <p className="text-muted-foreground">Manage your sales and orders</p>
         </div>
-        <CreateTransactionModal />
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant={transactions.length < 2 ? 'pulse' : 'default'}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Transaction
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[625px]">
+            <DialogHeader>
+              <DialogTitle>Add New Transaction</DialogTitle>
+            </DialogHeader>
+            {/* Your transaction form component */}
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>

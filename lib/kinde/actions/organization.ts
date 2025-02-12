@@ -5,6 +5,10 @@
 // It leverages the kindeApiFetch() function from kindeApiClient.ts.
 
 import { kindeApiFetch } from "@/lib/kinde/kindeApiClient";
+import { createInitialStore } from "@/lib/supabase/stores"
+import { createInitialItem } from "@/lib/supabase/items"
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
+import prisma from "@/utils/db"
 
 // Organization actions
 
@@ -17,15 +21,72 @@ export async function getOrganization(orgCode: string) {
 }
 
 /**
- * Creates a new organization.
- * POST /organization
- * Expects a JSON body with at least an "orgName" property (and optionally other properties).
+ * Creates a new organization and adds the current user.
  */
 export async function createOrganization(orgName: string, properties?: Record<string, any>) {
-  return kindeApiFetch(`/organization`, {
-    method: "POST",
-    body: JSON.stringify({ orgName, ...properties }),
-  });
+  try {
+    // Create the organization in Kinde
+    const orgResult = await kindeApiFetch(`/organization`, {
+      method: "POST",
+      body: JSON.stringify({ 
+        name: orgName,
+        ...properties 
+      }),
+    });
+
+    console.log("Organization creation result:", orgResult);
+
+    if (!orgResult || orgResult.error) {
+      throw new Error("Failed to create organization");
+    }
+
+    // Get the organization code from the nested response
+    const orgCode = orgResult.organization?.code;
+
+    if (!orgCode) {
+      throw new Error("No organization code returned");
+    }
+
+    // Add the current user to the organization
+    const addUserResult = await kindeApiFetch(`/organizations/${orgCode}/users`, {
+      method: "POST",
+      body: JSON.stringify({
+        users: [
+          {
+            id: properties?.user_id,
+            roles: ["manager"],
+            permissions: ["admin"]
+          }
+        ]
+      }),
+    });
+
+    console.log("Add user to organization result:", addUserResult);
+
+    // Create initial store and item
+    const { data: store, error: storeError } = await createInitialStore(orgCode, orgName);
+    if (storeError) {
+      console.error('Store creation error:', storeError);
+      throw new Error(storeError);
+    }
+
+    if (store) {
+      const { error: itemError } = await createInitialItem(orgCode, orgName);
+      if (itemError) {
+        console.error('Item creation error:', itemError);
+        throw new Error(itemError);
+      }
+    }
+
+    return {
+      org_code: orgCode,
+      ...orgResult,
+      addUserResult
+    };
+  } catch (error) {
+    console.error("Organization creation error:", error);
+    return { error: error instanceof Error ? error.message : "Failed to create organization" };
+  }
 }
 
 /**
@@ -34,10 +95,45 @@ export async function createOrganization(orgName: string, properties?: Record<st
  */
 export async function deleteOrganization(orgCode: string) {
   try {
+    // Delete from Kinde
     const response = await kindeApiFetch(`/organization/${orgCode}`, {
       method: 'DELETE',
     });
-    return { success: true, data: response };
+
+    // Delete all associated data from database in the correct order
+    // to respect foreign key constraints
+    await prisma.$transaction([
+      // Delete transaction items first (child records)
+      prisma.transactionItems.deleteMany({
+        where: { transaction: { org_id: orgCode } }
+      }),
+      // Delete transactions
+      prisma.transactions.deleteMany({
+        where: { org_id: orgCode }
+      }),
+      // Delete pages
+      prisma.page.deleteMany({
+        where: { org_id: orgCode }
+      }),
+      // Delete items
+      prisma.items.deleteMany({
+        where: { org_id: orgCode }
+      }),
+      // Delete stores
+      prisma.store.deleteMany({
+        where: { org_id: orgCode }
+      }),
+      // Delete customers
+      prisma.customers.deleteMany({
+        where: { org_id: orgCode }
+      })
+    ]);
+
+    return { 
+      success: true, 
+      data: response,
+      shouldLogout: true 
+    };
   } catch (error) {
     console.error('Delete Organization Error:', error);
     return {

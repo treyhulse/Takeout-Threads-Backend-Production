@@ -97,7 +97,7 @@ export default function ItemsPage() {
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button>
+            <Button variant={items.length < 2 ? 'pulse' : 'default'}>
               <Package2 className="mr-2 h-4 w-4" />
               Add Item
             </Button>

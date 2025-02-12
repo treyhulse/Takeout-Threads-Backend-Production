@@ -25,7 +25,8 @@ export function DeleteOrganizationButton({ orgCode, orgName }: DeleteOrganizatio
     try {
       const result = await deleteOrganization(orgCode);
       if (result.success) {
-        router.push('/dashboard');
+        // Redirect to logout endpoint with root as return URL
+        window.location.href = '/api/auth/logout?post_logout_redirect_url=/';
       } else {
         console.error('Failed to delete organization:', result.error);
       }

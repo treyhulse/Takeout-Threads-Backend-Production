@@ -68,10 +68,16 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "pulse-border": {
+          "0%": { borderColor: "rgb(34 197 94 / 0.5)", boxShadow: "0 0 0 0 rgb(34 197 94 / 0.5)" },
+          "70%": { borderColor: "rgb(34 197 94 / 0)", boxShadow: "0 0 0 10px rgb(34 197 94 / 0)" },
+          "100%": { borderColor: "rgb(34 197 94 / 0)", boxShadow: "0 0 0 0 rgb(34 197 94 / 0)" }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-border": "pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },

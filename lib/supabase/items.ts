@@ -137,3 +137,38 @@ export async function getItemById(id: string) {
   }
 }
 
+export async function createInitialItem(orgId: string, orgName: string) {
+  try {
+    const item = await prisma.items.create({
+      data: {
+        org_id: orgId,
+        name: `${orgName}'s First Product!`,
+        description: "This is your first product! Edit or delete it to get started.",
+        sku: "FIRST-001",
+        type: "PHYSICAL",
+        price: "9.99",
+        status: "ACTIVE",
+        unit_of_measure: "EACH",
+        weight: "1",
+        weight_unit: "POUND",
+        length: "10",
+        width: "10",
+        depth: "10",
+        length_unit: "INCH",
+        width_unit: "INCH", 
+        depth_unit: "INCH",
+        front_image_url: "https://aftkzcdfjeidbfutfhfw.supabase.co/storage/v1/object/public/media//FirstProductImage.png",
+        tags: ["first", "sample"],
+        metadata: {
+          isInitialItem: true
+        }
+      }
+    })
+
+    return { data: item, error: null }
+  } catch (error) {
+    console.error('Error creating initial item:', error)
+    return { data: null, error: 'Failed to create initial item' }
+  }
+}
+
