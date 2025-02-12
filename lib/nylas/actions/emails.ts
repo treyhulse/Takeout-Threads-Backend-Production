@@ -47,7 +47,7 @@ export async function getCustomerEmails(customerEmail: string) {
       identifier: process.env.NYLAS_GRANT_ID!,
       queryParams: {
         limit: 10,
-        any_email: customerEmail,
+        anyEmail: [customerEmail],
       },
     });
 
@@ -91,10 +91,10 @@ export async function sendEmail({
         subject,
         body,
         ...(replyToMessageId && { reply_to_message_id: replyToMessageId }),
-        tracking_options: {
+        trackingOptions: {
           opens: trackingOptions?.opens ?? true,
           links: trackingOptions?.links ?? true,
-          thread_replies: trackingOptions?.threadReplies ?? true,
+          threadReplies: trackingOptions?.threadReplies ?? true,
           label: trackingOptions?.label ?? 'customer-portal'
         }
       },
