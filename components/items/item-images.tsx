@@ -141,10 +141,13 @@ export function ItemImages({ item, onUpdate }: ItemImagesProps) {
         uploadedAt: new Date(),
       }));
 
-      // Update the item with new images
+      // Combine existing images with new images
+      const combinedImages = [...(item.images || []), ...newImages];
+
+      // Update the item with combined images
       const { data, error } = await updateItem(item.id, {
-        images: newImages,
-        // Set the front image if it's not already set
+        images: combinedImages,
+        // Set the front image only if it's not already set
         ...((!item.front_image_url && newImages.length > 0) && {
           front_image_url: newImages[0].url
         })
@@ -153,7 +156,7 @@ export function ItemImages({ item, onUpdate }: ItemImagesProps) {
       if (error) throw new Error(error);
       if (data) {
         onUpdate?.(data as unknown as Item);
-        toast.success("Images updated successfully");
+        toast.success("Images added successfully");
       }
     } catch (error) {
       console.error('Error updating images:', error);
@@ -207,6 +210,15 @@ export function ItemImages({ item, onUpdate }: ItemImagesProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Images</CardTitle>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setIsSelecting(true)}
+          className="gap-2"
+        >
+          <ImageIcon className="h-4 w-4" />
+          Add Images
+        </Button>
         <MediaLibrary
           open={isSelecting}
           onOpenChange={setIsSelecting}
