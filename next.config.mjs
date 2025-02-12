@@ -22,6 +22,11 @@ const nextConfig = {
         hostname: "takeoutthreads.kinde.com",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "aftkzcdfjeidbfutfhfw.supabase.co",
+        port: "",
+      },
     ],
   },
 };

@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils";
 
 interface CopyButtonProps {
   value: string;
+  className?: string;
 }
 
-export function CopyButton({ value }: CopyButtonProps) {
+export function CopyButton({ value, className }: CopyButtonProps) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -24,7 +25,8 @@ export function CopyButton({ value }: CopyButtonProps) {
       size="sm" 
       className={cn(
         "h-6 w-6 p-0 hover:bg-muted",
-        isCopied && "text-green-500 hover:text-green-500"
+        isCopied && "text-green-500 hover:text-green-500",
+        className
       )}
       onClick={handleCopy}
     >

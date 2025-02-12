@@ -1,3 +1,11 @@
+export type ItemImage = {
+  url: string
+  name: string
+  size: number
+  type: string
+  uploadedAt: Date
+}
+
 export type Item = {
   id: string
   org_id: string
@@ -23,4 +31,7 @@ export type Item = {
   tags?: string[]
   createdAt: Date
   updatedAt: Date
+  front_image_url?: string
+  back_image_url?: string
+  images?: ItemImage[]
 } 

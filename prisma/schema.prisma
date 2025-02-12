@@ -76,6 +76,9 @@ model Items {
   tags              Json?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  front_image_url    String?
+  back_image_url     String?
+  images            Json?    // Will store an array of image URLs
 
   // Add this relation
   TransactionItems  TransactionItems[]
