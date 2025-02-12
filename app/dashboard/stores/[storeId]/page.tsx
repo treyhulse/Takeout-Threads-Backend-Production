@@ -8,6 +8,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
+import { CreatePageModal } from "@/components/modals/create-page-modal"
 
 interface StorePageProps {
   params: {
@@ -156,8 +157,9 @@ export default async function StorePage({ params }: StorePageProps) {
 
         <TabsContent value="pages">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Store Pages</CardTitle>
+              <CreatePageModal storeId={store.id} orgId={store.org_id} />
             </CardHeader>
             <CardContent>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
