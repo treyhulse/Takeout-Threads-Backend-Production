@@ -83,7 +83,6 @@ export default function ShippingPage() {
     <div className="container py-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold tracking-tight">Shipping</h1>
-        <AddressModal />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

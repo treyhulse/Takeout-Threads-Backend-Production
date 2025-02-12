@@ -35,8 +35,8 @@ export const navLinks = [
     icon: Users,
   },
   {
-    name: "Sites",
-    href: "/dashboard/sites",
+    name: "Store",
+    href: "/dashboard/stores",
     icon: Globe,
   },
   {

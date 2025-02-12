@@ -261,3 +261,59 @@ model TransactionItems {
 
   @@unique([transaction_id, item_id])
 }
+
+
+
+
+
+
+
+
+
+// HERE IS WHERE I STARTED TO BUILD STOREFRONT APPROVED
+
+model Store {
+  id             String   @id @default(uuid()) @map("store_id")
+  org_id         String   @map("org_id")
+  theme_id       String?  @map("theme_id")
+  store_logo_url String?  @map("store_logo_url")
+  slogan         String?
+  name           String
+  subdomain      String   @unique
+  domain         String?
+  timezone       String?
+  metadata       Json?
+
+  // Relations
+  pages          Page[]
+  theme          Theme?   @relation(fields: [theme_id], references: [id])
+}
+
+model Page {
+  id       String @id @default(uuid()) @map("page_id")
+  store_id String @map("store_id")
+  org_id   String @map("org_id")
+  name     String
+  metadata Json?
+
+  // Relations
+  store    Store  @relation(fields: [store_id], references: [id])
+}
+
+model Component {
+  id       String @id @default(uuid()) @map("component_id")
+  org_id   String @map("org_id")
+  name     String
+  metadata Json?
+}
+
+model Theme {
+  id       String   @id @default(uuid()) @map("theme_id")
+  org_id   String   @map("org_id")
+  name     String
+  metadata Json?
+
+  // Relations
+  stores   Store[]
+}
+

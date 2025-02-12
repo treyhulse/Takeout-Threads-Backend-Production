@@ -1,0 +1,11 @@
+Stores are the top level object. 
+
+Each store has 1 theme referenced by theme_id
+
+Pages belong to a store via the store_id field on the page object. 
+
+Pages contain components in their metadata field. 
+
+The components are stored in the components table. 
+
+
