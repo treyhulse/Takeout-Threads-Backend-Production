@@ -83,4 +83,30 @@ export async function getPage(pageId: string) {
     console.error('Error fetching page:', error)
     return { data: null, error: 'Failed to fetch page' }
   }
+}
+
+/**
+ * Updates a page's metadata
+ */
+export async function updatePage(pageId: string, metadata: any) {
+  try {
+    const { getOrganization } = getKindeServerSession()
+    const org = await getOrganization()
+    
+    if (!org?.orgCode) throw new Error("No organization found")
+
+    const page = await prisma.page.update({
+      where: { 
+        id: pageId,
+        org_id: org.orgCode 
+      },
+      data: { metadata }
+    })
+
+    revalidatePath(`/dashboard/stores/${page.store_id}/pages/${page.id}`)
+    return { data: page, error: null }
+  } catch (error) {
+    console.error('Error updating page:', error)
+    return { data: null, error: 'Failed to update page' }
+  }
 } 

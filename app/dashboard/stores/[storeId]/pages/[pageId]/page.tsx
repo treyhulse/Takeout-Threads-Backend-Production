@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { PageEditor } from "./page-editor"
+import { CreatePageModal } from "@/components/modals/create-page-modal"
+import { CreateComponentModal } from "@/components/modals/create-component-modal"
 
 interface PageEditorProps {
   params: {
@@ -35,6 +37,11 @@ export default async function PageEditorPage({ params }: PageEditorProps) {
           </Button>
           <h1 className="text-3xl font-bold tracking-tight">{pageResult.data.name}</h1>
         </div>
+        <div className="flex items-center gap-2">
+            <CreateComponentModal orgId={pageResult.data.org_id} />
+            <CreatePageModal storeId={pageResult.data.store_id} orgId={pageResult.data.org_id} />
+        </div>
+
       </div>
 
       <PageEditor 
