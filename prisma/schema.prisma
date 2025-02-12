@@ -329,3 +329,53 @@ model Theme {
   stores   Store[]
 }
 
+
+
+
+
+
+
+
+// HERE IS WHERE I STARTED TO BUILD EMAIL OUT
+model Conversation {
+  id          String         @id @default(cuid())
+  subject     String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  org_id      String        // Organization ID from Kinde
+  user_id     String        // User ID from Kinde
+  messages    EmailMessage[]
+
+  @@index([org_id])
+  @@index([user_id])
+}
+
+model EmailMessage {
+  id              String        @id @default(cuid())
+  resendId        String?      // ID returned from Resend
+  conversationId  String
+  conversation    Conversation  @relation(fields: [conversationId], references: [id])
+  from            String
+  to              String
+  subject         String
+  message         String       @db.Text
+  status          EmailStatus  @default(SENT)
+  readAt          DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  org_id          String      // Organization ID from Kinde
+  user_id         String      // User ID from Kinde
+
+  @@index([conversationId])
+  @@index([org_id])
+  @@index([user_id])
+  @@index([resendId])
+}
+
+enum EmailStatus {
+  SENT
+  DELIVERED
+  FAILED
+  OPENED
+}
+
