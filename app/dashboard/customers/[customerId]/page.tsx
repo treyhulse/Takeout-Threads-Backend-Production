@@ -10,6 +10,7 @@ import { AddressModal } from '@/components/addresses/address-modal'
 import prisma from '@/utils/db'
 import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
+import { CustomerEmails } from "@/components/customers/customer-emails"
 
 export default async function CustomerPage({
   params
@@ -92,6 +93,7 @@ export default async function CustomerPage({
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="addresses">Addresses</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="emails">Emails</TabsTrigger>
         </TabsList>
         <TabsContent value="details">
           <Card>
@@ -121,6 +123,20 @@ export default async function CustomerPage({
             </CardHeader>
             <CardContent>
               <CustomerOrders customerId={customer.id} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="emails">
+          <Card>
+            <CardHeader>
+              <CardTitle>Email History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CustomerEmails 
+                customerEmail={customer.email} 
+                altEmail={customer.alt_email}
+                customerName={`${customer.first_name} ${customer.last_name}`}
+              />
             </CardContent>
           </Card>
         </TabsContent>
