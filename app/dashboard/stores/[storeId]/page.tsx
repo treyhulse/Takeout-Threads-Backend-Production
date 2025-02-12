@@ -71,13 +71,27 @@ export default async function StorePage({ params }: StorePageProps) {
                 <div>
                   <div className="text-sm font-medium">Custom Domain</div>
                   <div className="text-muted-foreground">
-                    {store.domain || 'No custom domain set'}
+                    {store.domain ? (
+                      <Link 
+                        href={`https://${store.domain}`} 
+                        target="_blank"
+                        className="hover:underline text-primary"
+                      >
+                        {store.domain}
+                      </Link>
+                    ) : 'No custom domain set'}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm font-medium">Subdomain</div>
                   <div className="text-muted-foreground">
-                    {store.subdomain}.yourdomain.com
+                    <Link 
+                      href={`https://${store.subdomain}.treyhulse.com`} 
+                      target="_blank"
+                      className="hover:underline text-primary"
+                    >
+                      {store.subdomain}.treyhulse.com
+                    </Link>
                   </div>
                 </div>
               </div>
