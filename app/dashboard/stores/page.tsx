@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { PlusCircle, Globe, Pencil, Layout, Palette } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { StoreModal } from "@/components/stores/store-modal"
 
 export default async function SitesPage() {
   const { data: stores, error } = await getStores()
@@ -23,10 +24,7 @@ export default async function SitesPage() {
     <div className="container py-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold tracking-tight">My Sites</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Site
-        </Button>
+        <StoreModal />
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
