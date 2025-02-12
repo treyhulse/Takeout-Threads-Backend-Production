@@ -84,4 +84,31 @@ export async function createStore(data: {
     console.error('Error creating store:', error)
     return { data: null, error: 'Failed to create store' }
   }
+}
+
+export async function updateStore(id: string, data: {
+  name?: string
+  subdomain?: string
+  slogan?: string
+  store_logo_url?: string | null
+}) {
+  try {
+    const { getOrganization } = getKindeServerSession()
+    const org = await getOrganization()
+    
+    if (!org?.orgCode) throw new Error("No organization found")
+
+    const store = await prisma.store.update({
+      where: { 
+        id,
+        org_id: org.orgCode 
+      },
+      data
+    })
+
+    return { data: store, error: null }
+  } catch (error) {
+    console.error('Error updating store:', error)
+    return { data: null, error: 'Failed to update store' }
+  }
 } 

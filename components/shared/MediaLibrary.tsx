@@ -43,13 +43,15 @@ interface MediaLibraryProps {
   onOpenChange?: (open: boolean) => void;
   onSelect?: (urls: string[]) => void;
   multiple?: boolean;
+  children?: React.ReactNode;
 }
 
 export function MediaLibrary({ 
   open, 
   onOpenChange, 
   onSelect,
-  multiple = false 
+  multiple = false,
+  children
 }: MediaLibraryProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [error, setError] = useState<string>("");
@@ -209,10 +211,7 @@ export function MediaLibrary({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="gap-2">
-            <Upload size={16} />
-            Media Library
-          </Button>
+          {children}
         </DialogTrigger>
         <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>

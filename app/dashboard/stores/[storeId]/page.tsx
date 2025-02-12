@@ -3,13 +3,15 @@ import { getStore } from "@/lib/supabase/stores"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Globe, ChevronLeft, Palette, Layout, Edit } from "lucide-react"
+import { Globe, ChevronLeft, Palette, Layout, Edit, Upload } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { CreatePageModal } from "@/components/modals/create-page-modal"
 import { CreateComponentModal } from "@/components/modals/create-component-modal"
+import { MediaLibrary } from "@/components/shared/MediaLibrary"
+import { updateStore } from "@/lib/supabase/stores"
 
 interface StorePageProps {
   params: {
@@ -35,14 +37,62 @@ export default async function StorePage({ params }: StorePageProps) {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {store.store_logo_url && (
-            <div className="h-12 w-12 relative rounded-full overflow-hidden">
-              <Image
-                src={store.store_logo_url}
-                alt={store.name}
-                fill
-                className="object-cover"
-              />
+          {store.store_logo_url ? (
+            <div className="relative h-12 w-12">
+              <div className="h-full w-full rounded-full overflow-hidden">
+                <Image
+                  src={store.store_logo_url}
+                  alt={store.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-1 -right-1">
+                <MediaLibrary
+                  onSelect={async (urls) => {
+                    'use server'
+                    if (urls.length > 0) {
+                      await updateStore(store.id, {
+                        store_logo_url: urls[0]
+                      })
+                    }
+                  }}
+                >
+                  <Button 
+                    size="icon" 
+                    className="h-5 w-5 rounded-full"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                </MediaLibrary>
+              </div>
+            </div>
+          ) : (
+            <div className="relative h-12 w-12">
+              <div className="h-full w-full rounded-full bg-muted flex items-center justify-center">
+                <span className="text-xl font-semibold text-muted-foreground">
+                  {store.name.charAt(0)}
+                </span>
+              </div>
+              <div className="absolute -bottom-1 -right-1">
+                <MediaLibrary
+                  onSelect={async (urls) => {
+                    'use server'
+                    if (urls.length > 0) {
+                      await updateStore(store.id, {
+                        store_logo_url: urls[0]
+                      })
+                    }
+                  }}
+                >
+                  <Button 
+                    size="icon" 
+                    className="h-5 w-5 rounded-full"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                </MediaLibrary>
+              </div>
             </div>
           )}
           <div>
