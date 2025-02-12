@@ -25,8 +25,9 @@ export function DeleteOrganizationButton({ orgCode, orgName }: DeleteOrganizatio
     try {
       const result = await deleteOrganization(orgCode);
       if (result.success) {
-        // Redirect to logout endpoint with root as return URL
-        window.location.href = '/api/auth/logout?post_logout_redirect_url=/';
+        // Use Kinde's logout endpoint without specifying a redirect URL
+        // This will use KINDE_POST_LOGOUT_REDIRECT_URL from your environment
+        window.location.href = '/api/auth/logout';
       } else {
         console.error('Failed to delete organization:', result.error);
       }
