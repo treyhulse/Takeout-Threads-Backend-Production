@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Filter, MoreHorizontal, Package2, Search } from "lucide-react"
-import { Item } from "@/types/items"
+import { Item, ItemImage } from "@/types/items"
 import {
   Dialog,
   DialogContent,
@@ -33,6 +33,7 @@ export default function ItemsPage() {
       if (error) throw new Error(error)
       const formattedData = (data || []).map(item => ({
         ...item,
+        images: (item.images as unknown) as ItemImage[] | undefined,
         description: item.description ?? undefined,
         global_identifier: item.global_identifier ?? undefined,
         variations: item.variations ?? undefined,

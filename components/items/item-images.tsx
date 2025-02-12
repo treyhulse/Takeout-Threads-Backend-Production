@@ -63,7 +63,7 @@ function SortableImage({ image, index, onRemove }: {
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="h-4 w-4 text-white" />
+        <GripVertical className="h-4 w-4 text-black" />
       </div>
       {index <= 1 && (
         <div className="absolute top-2 left-8 z-10 bg-black/40 px-2 py-1 rounded text-xs text-white">
@@ -82,10 +82,10 @@ function SortableImage({ image, index, onRemove }: {
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-white hover:text-white hover:bg-red-500/20"
+          className="h-6 w-6 text-black hover:text-red-500"
           onClick={onRemove}
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4 text-black" />
         </Button>
       </div>
     </div>
