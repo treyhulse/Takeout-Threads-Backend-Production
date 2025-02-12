@@ -4,6 +4,7 @@ export type ItemImage = {
   size: number
   type: string
   uploadedAt: Date
+  position?: 'front' | 'back' | number
 }
 
 export type Item = {

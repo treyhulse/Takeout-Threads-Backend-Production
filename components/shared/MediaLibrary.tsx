@@ -38,8 +38,19 @@ type UploadingFile = {
   error?: string;
 };
 
-export default function MediaLibrary() {
-  const [open, setOpen] = useState(false);
+interface MediaLibraryProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onSelect?: (urls: string[]) => void;
+  multiple?: boolean;
+}
+
+export function MediaLibrary({ 
+  open, 
+  onOpenChange, 
+  onSelect,
+  multiple = false 
+}: MediaLibraryProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [error, setError] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
@@ -186,9 +197,17 @@ export default function MediaLibrary() {
     }
   };
 
+  const handleSelect = () => {
+    if (onSelect) {
+      onSelect(Array.from(selectedImages));
+      setSelectedImages(new Set());
+      onOpenChange?.(false);
+    }
+  };
+
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
           <Button variant="outline" className="gap-2">
             <Upload size={16} />
@@ -344,6 +363,18 @@ export default function MediaLibrary() {
                 </div>
               )}
             </div>
+
+            {/* Add select button when in selection mode */}
+            {onSelect && selectedImages.size > 0 && (
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setSelectedImages(new Set())}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSelect}>
+                  Select {selectedImages.size} image{selectedImages.size > 1 ? 's' : ''}
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

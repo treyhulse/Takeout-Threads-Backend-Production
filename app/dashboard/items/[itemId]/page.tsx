@@ -30,6 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { ItemForm } from "@/components/items/item-form"
+import { ItemImages } from "@/components/items/item-images"
 
 export default function ItemDetailsPage() {
   const params = useParams()
@@ -41,7 +42,7 @@ export default function ItemDetailsPage() {
     try {
       const { data, error } = await getItemById(params.itemId as string)
       if (error) throw new Error(error)
-      setItem(data as Item)
+      setItem(data as unknown as Item)
     } catch (error) {
       toast.error("Failed to fetch item")
       router.push("/dashboard/items")
@@ -157,6 +158,7 @@ export default function ItemDetailsPage() {
         </TabsList>
 
         <TabsContent value="details" className="space-y-4">
+          <ItemImages item={item} onUpdate={setItem} />
           <Card>
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>

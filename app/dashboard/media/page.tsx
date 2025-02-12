@@ -1,5 +1,5 @@
 // app/dashboard/media/page.tsx
-import MediaLibrary from "@/components/shared/MediaLibrary";
+import { MediaLibrary } from "@/components/shared/MediaLibrary";
 
 export default function MediaPage() {
   return (
