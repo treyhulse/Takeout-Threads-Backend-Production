@@ -13,7 +13,7 @@ export type Store = {
   verification_code: string | null
   timezone: string | null
   metadata: JsonValue
-  theme?: Theme
+  theme?: Theme | null
   pages?: Page[]
 }
 

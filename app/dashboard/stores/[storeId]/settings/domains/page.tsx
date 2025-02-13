@@ -30,7 +30,7 @@ export default async function DomainsPage({ params }: { params: { storeId: strin
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <DomainForm store={store} />
+          {store && <DomainForm store={store} />}
           
           {store?.domain && (
             <Alert variant={store.domain_verified ? "default" : "destructive"}>
