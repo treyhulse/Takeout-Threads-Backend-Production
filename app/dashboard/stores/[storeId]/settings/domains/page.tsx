@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getStore, updateDomain, verifyDomain } from "@/lib/supabase/stores"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle, ChevronLeft } from "lucide-react"
 import { DomainForm } from "@/components/stores/domain-form"
 import { Store } from "@/types/stores"
+import Link from "next/link"
 
 export default async function DomainsPage({ params }: { params: { storeId: string } }) {
   const { data: storeData } = await getStore(params.storeId)
@@ -13,6 +14,13 @@ export default async function DomainsPage({ params }: { params: { storeId: strin
   
   return (
     <div className="space-y-6">
+      <Button variant="ghost" asChild>
+        <Link href={`/dashboard/stores/${params.storeId}`}>
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          Back to Store
+        </Link>
+      </Button>
+
       <Card>
         <CardHeader>
           <CardTitle>Custom Domain</CardTitle>

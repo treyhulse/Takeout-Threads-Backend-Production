@@ -32,10 +32,10 @@ export function PreviewButton({ storeId, itemSku }: PreviewButtonProps) {
 
   const handlePreview = () => {
     if (!storeDomain) return
-    // If it's a full domain (contains dots), use it as is, otherwise append .treyhulse.com
+    // If it's a full domain (contains dots), use it as is, otherwise append .takeout-threads.app
     const baseUrl = storeDomain.includes('.') 
       ? storeDomain 
-      : `${storeDomain}.treyhulse.com`
+      : `${storeDomain}.takeout-threads.app`
     const url = `https://${baseUrl}/products/${itemSku}`
     window.open(url, '_blank')
   }
