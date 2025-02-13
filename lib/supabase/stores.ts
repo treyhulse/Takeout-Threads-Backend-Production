@@ -69,6 +69,7 @@ export async function getStore(id: string) {
 export async function createStore(data: {
   name: string
   subdomain: string
+  domain?: string
   slogan?: string
 }) {
   try {
@@ -77,11 +78,21 @@ export async function createStore(data: {
     
     if (!org?.orgCode) throw new Error("No organization found")
 
+    // Check if subdomain is unique
+    const existingStore = await prisma.store.findFirst({
+      where: { subdomain: data.subdomain }
+    })
+
+    if (existingStore) {
+      throw new Error("Subdomain already exists")
+    }
+
     const store = await prisma.store.create({
       data: {
         org_id: org.orgCode,
         name: data.name,
         subdomain: data.subdomain,
+        domain: data.domain || null,
         slogan: data.slogan,
       },
     })
@@ -89,7 +100,7 @@ export async function createStore(data: {
     return { data: store, error: null }
   } catch (error) {
     console.error('Error creating store:', error)
-    return { data: null, error: 'Failed to create store' }
+    return { data: null, error: error instanceof Error ? error.message : 'Failed to create store' }
   }
 }
 

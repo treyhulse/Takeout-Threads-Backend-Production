@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -21,6 +21,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,7 @@ const formSchema = z.object({
   name: z.string().min(1, "Store name is required"),
   subdomain: z.string().min(1, "Subdomain is required")
     .regex(/^[a-zA-Z0-9-]+$/, "Subdomain can only contain letters, numbers, and hyphens"),
+  domain: z.string().optional(),
   slogan: z.string().optional(),
 })
 
@@ -45,9 +47,24 @@ export function StoreModal() {
     defaultValues: {
       name: "",
       subdomain: "",
+      domain: "",
       slogan: "",
     },
   })
+
+  // Watch the name field outside useEffect
+  const storeName = form.watch("name")
+
+  // Generate subdomain from store name
+  useEffect(() => {
+    const subdomain = storeName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')  // Replace non-alphanumeric chars with hyphens
+      .replace(/-+/g, '-')         // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, '')       // Remove leading/trailing hyphens
+    
+    form.setValue("subdomain", subdomain)
+  }, [storeName, form])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -108,6 +125,25 @@ export function StoreModal() {
                   <FormControl>
                     <Input placeholder="my-store" {...field} />
                   </FormControl>
+                  <FormDescription>
+                    Your site will be available at {field.value || "your-subdomain"}.takeout-threads.app
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="domain"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Custom Domain (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="www.mystore.com" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Enter your custom domain if you want to use one
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
