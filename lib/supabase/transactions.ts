@@ -62,16 +62,20 @@ export async function getTransactionById(id: string) {
           item: true
         }
       },
-      customer: true
+      customer: true,
+      billing_address: true,
+      shipping_address: true
     }
   })
 
   if (!transaction) return null
 
-  // Convert Decimal to number
   return {
     ...transaction,
     total: Number(transaction.total),
+    tax_amount: Number(transaction.tax_amount),
+    shipping_cost: Number(transaction.shipping_cost),
+    total_amount: Number(transaction.total_amount),
     tax: transaction.tax ? Number(transaction.tax) : null,
     shipping: transaction.shipping ? Number(transaction.shipping) : null,
     items: transaction.items.map(item => ({
@@ -127,6 +131,69 @@ export async function createTransaction(data: TransactionCreateInput) {
       customer: true,
     },
   })
+}
+
+interface TransactionDetailsUpdate {
+  entity_id?: string | null
+  billing_address_id?: string | null
+  shipping_address_id?: string | null
+}
+
+export async function updateTransactionDetails(
+  id: string, 
+  data: TransactionDetailsUpdate
+) {
+  try {
+    const { getOrganization } = getKindeServerSession()
+    const org = await getOrganization()
+    
+    if (!org?.orgCode) throw new Error("No organization found")
+
+    const result = await prisma.transactions.update({
+      where: { 
+        id,
+        org_id: org.orgCode 
+      },
+      data: {
+        entity_id: data.entity_id,
+        billing_address_id: data.billing_address_id,
+        shipping_address_id: data.shipping_address_id,
+      },
+      include: {
+        items: {
+          include: {
+            item: true,
+          },
+        },
+        customer: true,
+        billing_address: true,
+        shipping_address: true,
+      },
+    })
+
+    // Convert Decimal values to numbers
+    return {
+      data: {
+        ...result,
+        total: Number(result.total),
+        tax_amount: Number(result.tax_amount),
+        shipping_cost: Number(result.shipping_cost),
+        total_amount: Number(result.total_amount),
+        tax: result.tax ? Number(result.tax) : null,
+        shipping: result.shipping ? Number(result.shipping) : null,
+        items: result.items.map(item => ({
+          ...item,
+          total: Number(item.total),
+          unit_price: Number(item.unit_price),
+          discount: item.discount ? Number(item.discount) : null
+        }))
+      },
+      error: null
+    }
+  } catch (error) {
+    console.error('Failed to update transaction:', error)
+    return { data: null, error: 'Failed to update transaction' }
+  }
 }
 
 export async function updateTransaction(id: string, data: TransactionUpdateInput) {

@@ -170,9 +170,11 @@ model Addresses {
   customer      Customers @relation(fields: [customer_id], references: [id])
   shipping_for  Customers[] @relation("ShippingAddress")
   billing_for   Customers[] @relation("BillingAddress")
+  locations     Locations[]
 
-  // Add this relation
-  locations       Locations[]
+  // Add these new relations
+  transactions_billing   Transactions[] @relation("TransactionBillingAddress")
+  transactions_shipping  Transactions[] @relation("TransactionShippingAddress")
 
   @@unique([org_id, address_id])
 }
@@ -245,6 +247,13 @@ model Transactions {
   type            TransactionType
   status          TransactionStatus @default(PENDING)
   total           Decimal
+  tax_amount      Decimal          @default(0)
+  shipping_cost   Decimal          @default(0)
+  total_amount    Decimal          @default(0)
+  payment_status  PaymentStatus    @default(PENDING)
+  payment_method  PaymentMethod?
+  billing_address_id   String?
+  shipping_address_id  String?
   tax             Decimal?
   shipping        Decimal?
   created_at      DateTime         @default(now())
@@ -253,6 +262,8 @@ model Transactions {
   // Relations
   items           TransactionItems[]
   customer        Customers?       @relation(fields: [entity_id], references: [id])
+  billing_address  Addresses?      @relation("TransactionBillingAddress", fields: [billing_address_id], references: [id])
+  shipping_address Addresses?      @relation("TransactionShippingAddress", fields: [shipping_address_id], references: [id])
 
   @@unique([org_id, number])
 }
@@ -379,5 +390,21 @@ enum EmailStatus {
   DELIVERED
   FAILED
   OPENED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIALLY_PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  BANK_TRANSFER
+  CASH
+  CHECK
+  OTHER
 }
 

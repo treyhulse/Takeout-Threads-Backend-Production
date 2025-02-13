@@ -18,19 +18,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCustomerAddresses } from "@/lib/supabase/addresses";
 import { getCustomers } from "@/lib/supabase/customers";
-
-type Address = {
-  id: string;
-  address_id: string;
-  name: string | null;
-  street1: string;
-  street2: string | null;
-  city: string;
-  state: string;
-  zip: string;
-  country: string;
-  customer_id: string;
-};
+import { Address } from "@/types/addresses"
 
 type Customer = {
   id: string;
@@ -41,10 +29,11 @@ type Customer = {
 };
 
 interface AddressSelectProps {
-  onAddressSelect: (address: Address) => void;
+  value?: string
+  onAddressSelect: (address: Address) => void
 }
 
-export function AddressSelect({ onAddressSelect }: AddressSelectProps) {
+export function AddressSelect({ value, onAddressSelect }: AddressSelectProps) {
   const [open, setOpen] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [customers, setCustomers] = useState<Record<string, Customer>>({});

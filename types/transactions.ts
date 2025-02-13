@@ -1,4 +1,5 @@
-import { TransactionStatus, TransactionType } from "@prisma/client"
+import { Address } from "@/types/addresses"
+import { PaymentMethod, PaymentStatus, TransactionType, TransactionStatus } from "@prisma/client"
 
 export interface TransactionItem {
   id: string
@@ -25,8 +26,15 @@ export interface Transaction {
   type: TransactionType
   status: TransactionStatus
   total: number
+  tax_amount: number
+  shipping_cost: number
+  total_amount: number
   tax?: number | null
   shipping?: number | null
+  payment_status: PaymentStatus
+  payment_method?: PaymentMethod | null
+  billing_address_id?: string | null
+  shipping_address_id?: string | null
   created_at: Date
   updated_at: Date
   items: TransactionItem[]
@@ -36,6 +44,8 @@ export interface Transaction {
     company_name?: string | null
     email: string
   } | null
+  billing_address?: Address | null
+  shipping_address?: Address | null
 }
 
 export type TransactionCreateInput = {
