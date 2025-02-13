@@ -37,6 +37,9 @@ export async function getTransactions() {
     const data = transactions.map(t => ({
       ...t,
       total: Number(t.total),
+      tax_amount: Number(t.tax_amount),
+      shipping_cost: Number(t.shipping_cost),
+      total_amount: Number(t.total_amount),
       tax: t.tax ? Number(t.tax) : null,
       shipping: t.shipping ? Number(t.shipping) : null,
       items: t.items.map(item => ({
