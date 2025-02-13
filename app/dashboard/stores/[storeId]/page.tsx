@@ -138,11 +138,11 @@ export default async function StorePage({ params }: StorePageProps) {
                   <div className="text-sm font-medium">Subdomain</div>
                   <div className="text-muted-foreground">
                     <Link 
-                      href={`https://${store.subdomain}.treyhulse.com`} 
+                      href={`https://${store.subdomain}.takeout-threads.app`} 
                       target="_blank"
                       className="hover:underline text-primary"
                     >
-                      {store.subdomain}.treyhulse.com
+                      {store.subdomain}.takeout-threads.app
                     </Link>
                   </div>
                 </div>

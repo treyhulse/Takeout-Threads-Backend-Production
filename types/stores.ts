@@ -1,3 +1,5 @@
+import { JsonValue } from "@prisma/client/runtime/library"
+
 export type Store = {
   id: string
   org_id: string
@@ -7,8 +9,10 @@ export type Store = {
   name: string
   subdomain: string
   domain: string | null
+  domain_verified: boolean
+  verification_code: string | null
   timezone: string | null
-  metadata: Record<string, any> | null
+  metadata: JsonValue
   theme?: Theme
   pages?: Page[]
 }
@@ -17,7 +21,7 @@ export type Theme = {
   id: string
   org_id: string
   name: string
-  metadata: Record<string, any> | null
+  metadata: JsonValue
 }
 
 export type Page = {
@@ -25,5 +29,5 @@ export type Page = {
   store_id: string
   org_id: string
   name: string
-  metadata: Record<string, any> | null
+  metadata: JsonValue
 } 

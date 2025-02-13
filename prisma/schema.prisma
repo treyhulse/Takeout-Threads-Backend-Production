@@ -293,6 +293,8 @@ model Store {
   name           String
   subdomain      String   @unique
   domain         String?
+  domain_verified  Boolean  @default(false)
+  verification_code String? // Stores the TXT record value
   timezone       String?
   metadata       Json?
 

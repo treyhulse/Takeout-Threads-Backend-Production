@@ -19,7 +19,7 @@ interface ViewWebsiteCardProps {
 
 export function ViewWebsiteCard({ storeName, subdomain, storeId, logoUrl }: ViewWebsiteCardProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const storeUrl = `https://${subdomain}.treyhulse.com`;
+  const storeUrl = `https://${subdomain}.takeout-threads.app`;
 
   const handleLogoSelect = async (urls: string[]) => {
     if (urls.length === 0) return;

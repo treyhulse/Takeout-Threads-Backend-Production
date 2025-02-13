@@ -62,7 +62,7 @@ export default async function SitesPage() {
                     <span className="font-medium">Domain</span>
                   </div>
                   <p className="text-sm text-muted-foreground truncate">
-                    {store.domain || `${store.subdomain}.treyhulse.com`}
+                    {store.domain || `${store.subdomain}.takeout-threads.app`}
                   </p>
                 </div>
                 
@@ -96,7 +96,7 @@ export default async function SitesPage() {
 
             <CardFooter className="flex justify-between mt-auto">
               <Button variant="outline" size="sm" asChild>
-                <Link href={`https://${store.subdomain}.treyhulse.com`} target="_blank">
+                <Link href={`https://${store.subdomain}.takeout-threads.app`} target="_blank">
                   <Globe className="mr-2 h-4 w-4" />
                   Visit Site
                 </Link>
