@@ -1,0 +1,90 @@
+import { createServerClient } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from 'next/server'
+
+export async function middleware(request: NextRequest) {
+  try {
+    // Get hostname (e.g. subdomain.example.com or custom.domain.com)
+    const hostname = request.headers.get('host') || ''
+    
+    // Skip middleware for assets
+    if (
+      request.nextUrl.pathname.startsWith('/_next') ||
+      request.nextUrl.pathname.startsWith('/api') ||
+      request.nextUrl.pathname.startsWith('/static')
+    ) {
+      return NextResponse.next()
+    }
+
+    // Create Supabase client
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return request.cookies.get(name)?.value
+          },
+          set(name: string, value: string, options: any) {
+            request.cookies.set({ name, value, ...options })
+          },
+          remove(name: string, options: any) {
+            request.cookies.delete({ name, ...options })
+          },
+        },
+      }
+    )
+
+    // First, try to find store by custom domain
+    let { data: store, error: domainError } = await supabase
+      .from('Store')
+      .select()
+      .eq('domain', hostname)
+      .eq('domain_verified', true)
+      .single()
+
+    // If no verified custom domain found, try subdomain
+    if (!store) {
+      const subdomain = hostname.split('.')[0]
+      console.log('🔍 Checking subdomain:', subdomain)
+
+      const { data: subdomainStore, error: subdomainError } = await supabase
+        .from('Store')
+        .select()
+        .eq('subdomain', subdomain)
+        .single()
+
+      if (subdomainError || !subdomainStore) {
+        console.log('🔴 Store not found for:', hostname)
+        return NextResponse.redirect(new URL('/404', request.url))
+      }
+
+      store = subdomainStore
+    }
+
+    console.log('🟢 Found store:', store)
+
+    // Rewrite to the appropriate page
+    const url = request.nextUrl.clone()
+    url.pathname = `/${store.subdomain}${url.pathname}`
+    
+    const response = NextResponse.rewrite(url)
+    response.headers.set('x-store-data', JSON.stringify(store))
+    
+    return response
+  } catch (error) {
+    console.error('🔴 Middleware error:', error)
+    return NextResponse.redirect(new URL('/404', request.url))
+  }
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
+}

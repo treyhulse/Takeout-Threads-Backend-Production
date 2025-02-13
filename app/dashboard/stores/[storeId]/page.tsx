@@ -12,6 +12,12 @@ import { CreatePageModal } from "@/components/modals/create-page-modal"
 import { CreateComponentModal } from "@/components/modals/create-component-modal"
 import { MediaLibrary } from "@/components/shared/MediaLibrary"
 import { updateStore } from "@/lib/supabase/stores"
+import { verifyDomainOnVercel, checkDomainStatus } from '@/lib/vercel/actions/domains'
+import { AlertCircle, CheckCircle } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Table, TableHeader, TableBody, TableCell, TableRow, TableHead } from '@/components/ui/table'
+import { cn } from "@/lib/utils"
+import { DomainForm } from "@/components/stores/domain-form"
 
 interface StorePageProps {
   params: {
@@ -118,54 +124,8 @@ export default async function StorePage({ params }: StorePageProps) {
             <CardHeader>
               <CardTitle>Domain Settings</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium">Custom Domain</div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-muted-foreground">
-                      {store.domain ? (
-                        <Link 
-                          href={`https://${store.domain}`} 
-                          target="_blank"
-                          className="hover:underline text-primary flex items-center gap-2"
-                        >
-                          {store.domain}
-                          <ExternalLink className="h-4 w-4" />
-                        </Link>
-                      ) : 'No custom domain set'}
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      asChild
-                    >
-                      <Link href={`/dashboard/stores/${store.id}/settings/domains`}>
-                        <Globe className="h-4 w-4 mr-2" />
-                        Configure Domain
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium">Subdomain</div>
-                  <div className="text-muted-foreground">
-                    <Link 
-                      href={`https://${store.subdomain}.takeout-threads.app`} 
-                      target="_blank"
-                      className="hover:underline text-primary flex items-center gap-2"
-                    >
-                      {store.subdomain}.takeout-threads.app
-                      <ExternalLink className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              <Separator />
-              <div>
-                <div className="text-sm font-medium">Timezone</div>
-                <div className="text-muted-foreground">{store.timezone}</div>
-              </div>
+            <CardContent>
+              <DomainForm store={store} />
             </CardContent>
           </Card>
         </TabsContent>
