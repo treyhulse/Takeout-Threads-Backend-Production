@@ -195,9 +195,6 @@ export async function getItemTransactions(itemId: string) {
           }
         }
       },
-      orderBy: {
-        created_at: 'desc'
-      }
     })
 
     return { 
