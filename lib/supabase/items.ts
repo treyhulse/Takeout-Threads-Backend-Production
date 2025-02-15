@@ -172,3 +172,45 @@ export async function createInitialItem(orgId: string, orgName: string) {
   }
 }
 
+export async function getItemTransactions(itemId: string) {
+  try {
+    const { getOrganization } = getKindeServerSession()
+    const org = await getOrganization()
+    
+    if (!org?.orgCode) throw new Error("No organization found")
+
+    const transactions = await prisma.transactionItems.findMany({
+      where: {
+        item_id: itemId,
+        item: {
+          org_id: org.orgCode
+        }
+      },
+      include: {
+        transaction: true,
+        item: {
+          select: {
+            name: true,
+            sku: true
+          }
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    })
+
+    return { 
+      data: transactions.map(transaction => ({
+        ...transaction,
+        unit_price: Number(transaction.unit_price),
+        total: Number(transaction.total),
+        discount: transaction.discount ? Number(transaction.discount) : null
+      })), 
+      error: null 
+    }
+  } catch (error) {
+    console.error('Error fetching item transactions:', error)
+    return { data: null, error: 'Failed to fetch item transactions' }
+  }
+}

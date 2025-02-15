@@ -14,11 +14,11 @@ export type Item = {
   description?: string
   sku: string
   type: string
-  variations?: any
+  variations?: Record<string, any>
   price: string | null
   global_identifier?: string
   status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
-  metadata?: any
+  metadata?: Record<string, any>
   notes?: string
   unit_of_measure: string
   weight: string | null
@@ -35,5 +35,65 @@ export type Item = {
   front_image_url?: string
   back_image_url?: string
   images?: ItemImage[]
-  store_id: string
-} 
+  inventory_quantity: number
+  low_stock_alert?: number
+  
+  // Relations (optional since they might not always be included)
+  inventory_movements?: InventoryMovement[]
+  TransactionItems?: TransactionItem[]
+  CartItems?: CartItem[]
+}
+
+export type InventoryMovement = {
+  id: string
+  item_id: string
+  quantity_change: number
+  reason: string
+  reference_id?: string
+  created_at: Date
+  
+  // Relations
+  item?: Item
+}
+
+export type TransactionItem = {
+  id: string
+  transaction_id: string
+  item_id: string
+  quantity: number
+  price_level?: string
+  unit_price: number
+  discount?: number
+  total: number
+  
+  // Relations
+  transaction?: Transaction
+  item?: Item
+}
+
+export type CartItem = {
+  id: string
+  cart_id: string
+  item_id: string
+  quantity: number
+  unit_price: number
+  total: number
+  
+  // Relations
+  cart?: Cart
+  item?: Item
+}
+
+// Adding these types to support the relations
+export type Transaction = {
+  id: string
+  number: string
+  status: 'PENDING' | 'APPROVED' | 'COMPLETED' | 'CANCELED'
+  // ... other transaction fields as needed
+}
+
+export type Cart = {
+  id: string
+  status: 'ACTIVE' | 'CHECKOUT_IN_PROGRESS' | 'CONVERTED' | 'ABANDONED' | 'EXPIRED'
+  // ... other cart fields as needed
+}

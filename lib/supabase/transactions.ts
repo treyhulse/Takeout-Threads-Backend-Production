@@ -83,6 +83,7 @@ export async function getTransactionById(id: string) {
     tax: transaction.tax ? Number(transaction.tax) : null,
     items: transaction.items.map(item => ({
       ...item,
+      created_at: transaction.created_at,
       total: Number(item.total),
       unit_price: Number(item.unit_price),
       discount: item.discount ? Number(item.discount) : null
@@ -187,6 +188,7 @@ export async function updateTransactionDetails(
         tax: result.tax ? Number(result.tax) : null,
         items: result.items.map(item => ({
           ...item,
+          created_at: result.created_at,
           total: Number(item.total),
           unit_price: Number(item.unit_price),
           discount: item.discount ? Number(item.discount) : null

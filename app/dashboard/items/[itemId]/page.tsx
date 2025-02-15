@@ -7,37 +7,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { Package2, ChevronLeft, Edit, Trash } from "lucide-react"
+import { 
+  Package2, ChevronLeft, Edit, Trash, 
+  History, DollarSign, Box, Truck 
+} from "lucide-react"
 import { Item } from "@/types/items"
 import { getItemById, updateItem, deleteItem } from "@/lib/supabase/items"
 import { toast } from "sonner"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { ItemForm } from "@/components/items/item-form"
+
+// Components
+import { ItemBasicInfo } from "@/components/items/item-basic-info"
+import { ItemPricing } from "@/components/items/item-pricing"
+import { ItemInventory } from "@/components/items/item-inventory"
+import { ItemDimensions } from "@/components/items/item-dimensions"
+import { ItemTransactionHistory } from "@/components/items/item-transaction-history"
 import { ItemImages } from "@/components/items/item-images"
-import { PreviewButton } from "@/components/items/PreviewButton"
+import { ItemForm } from "@/components/items/item-form"
+import { PreviewButton } from "@/components/items/preview-button"
+import { Dialog, DialogTitle, DialogHeader, DialogContent } from "@/components/ui/dialog"
 
 export default function ItemDetailsPage() {
   const params = useParams()
   const router = useRouter()
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
 
   const fetchItem = useCallback(async () => {
     try {
@@ -91,158 +85,111 @@ export default function ItemDetailsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <Button
-        variant="ghost"
-        className="mb-4"
-        onClick={() => router.push('/dashboard/items')}
-      >
-        <ChevronLeft className="mr-2 h-4 w-4" />
-        Back to Items
-      </Button>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Package2 className="h-6 w-6" />
-              {item.name}
-            </h1>
-            <p className="text-muted-foreground">SKU: {item.sku}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[625px]">
-              <DialogHeader>
-                <DialogTitle>Edit Item</DialogTitle>
-              </DialogHeader>
-              <ItemForm onSubmit={handleUpdateItem} defaultValues={item} />
-            </DialogContent>
-          </Dialog>
-
-          <PreviewButton storeId={item.store_id} itemSku={item.sku} />
+      {/* Header Section */}
+      <div className="flex justify-between items-center">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/items')}
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Back to Items
+        </Button>
+        
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
+          </Button>
+          <PreviewButton itemSku={item.sku} itemName={item.name} />
         </div>
       </div>
 
+      {/* Title Section */}
+      <div className="flex items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Package2 className="h-6 w-6" />
+            {item.name}
+          </h1>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span>SKU: {item.sku}</span>
+            <Badge variant={
+              item.status === 'ACTIVE' ? "default" :
+              item.status === 'DRAFT' ? "secondary" : "destructive"
+            }>
+              {item.status.toLowerCase()}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
       <Tabs defaultValue="details" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="dimensions">Dimensions</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="details">
+            <Package2 className="h-4 w-4 mr-2" />
+            Details
+          </TabsTrigger>
+          <TabsTrigger value="pricing">
+            <DollarSign className="h-4 w-4 mr-2" />
+            Pricing
+          </TabsTrigger>
+          <TabsTrigger value="inventory">
+            <Box className="h-4 w-4 mr-2" />
+            Inventory
+          </TabsTrigger>
+          <TabsTrigger value="shipping">
+            <Truck className="h-4 w-4 mr-2" />
+            Shipping
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <History className="h-4 w-4 mr-2" />
+            History
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="details" className="space-y-4">
-          <ItemImages item={item} onUpdate={setItem} />
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium">Status</div>
-                  <Badge variant={
-                    item.status === 'ACTIVE' ? "default" :
-                    item.status === 'DRAFT' ? "secondary" : "destructive"
-                  }>
-                    {item.status.toLowerCase()}
-                  </Badge>
-                </div>
-                <div>
-                  <div className="text-sm font-medium">Type</div>
-                  <div>{item.type}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium">Price</div>
-                  <div>{item.price ? `$${item.price}` : 'N/A'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium">Unit of Measure</div>
-                  <div>{item.unit_of_measure}</div>
-                </div>
-              </div>
-              <Separator />
-              <div>
-                <div className="text-sm font-medium mb-2">Description</div>
-                <div className="text-muted-foreground">
-                  {item.description || 'No description provided'}
-                </div>
-              </div>
-              {item.notes && (
-                <>
-                  <Separator />
-                  <div>
-                    <div className="text-sm font-medium mb-2">Notes</div>
-                    <div className="text-muted-foreground">{item.notes}</div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+        <TabsContent value="details">
+          <div className="grid gap-6 md:grid-cols-2">
+            <ItemImages item={item} onUpdate={setItem} />
+            <ItemBasicInfo item={item} onUpdate={handleUpdateItem} />
+          </div>
         </TabsContent>
 
-        <TabsContent value="dimensions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Dimensions & Weight</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {item.weight && (
-                  <div>
-                    <div className="text-sm font-medium">Weight</div>
-                    <div>{item.weight} {item.weight_unit?.toLowerCase()}</div>
-                  </div>
-                )}
-                {item.length && (
-                  <div>
-                    <div className="text-sm font-medium">Length</div>
-                    <div>{item.length} {item.length_unit?.toLowerCase()}</div>
-                  </div>
-                )}
-                {item.width && (
-                  <div>
-                    <div className="text-sm font-medium">Width</div>
-                    <div>{item.width} {item.width_unit?.toLowerCase()}</div>
-                  </div>
-                )}
-                {item.depth && (
-                  <div>
-                    <div className="text-sm font-medium">Depth</div>
-                    <div>{item.depth} {item.depth_unit?.toLowerCase()}</div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="pricing">
+          <ItemPricing item={item} onUpdate={handleUpdateItem} />
+        </TabsContent>
+
+        <TabsContent value="inventory">
+          <ItemInventory item={item} onUpdate={handleUpdateItem} />
+        </TabsContent>
+
+        <TabsContent value="shipping">
+          <ItemDimensions item={item} onUpdate={handleUpdateItem} />
         </TabsContent>
 
         <TabsContent value="history">
-          <Card>
-            <CardHeader>
-              <CardTitle>History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="text-sm font-medium">Created</div>
-                  <div>{new Date(item.createdAt).toLocaleString()}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium">Last Updated</div>
-                  <div>{new Date(item.updatedAt).toLocaleString()}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ItemTransactionHistory itemId={item.id} />
         </TabsContent>
       </Tabs>
+
+      {/* Edit Modal */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle>Edit Item</DialogTitle>
+          </DialogHeader>
+          <ItemForm 
+            defaultValues={item} 
+            onSubmit={async (data) => {
+              await handleUpdateItem(data)
+              setIsEditing(false)
+            }} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
-} 
+}

@@ -12,6 +12,7 @@ const poppins = Poppins({
   variable: "--font-sans",
 });
 
+
 export const metadata: Metadata = {
   title: "Takeout Threads",
   description: "Takeout Threads - apparel customization platform",
@@ -24,19 +25,19 @@ export default function RootLayout({
 }>) {
   return (
     <AuthProvider>
-      <html lang="en" suppressHydrationWarning className={poppins.variable}>
-        <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </body>
-      </html>
+        <html lang="en" suppressHydrationWarning className={poppins.variable}>
+          <body>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </body>
+        </html>
     </AuthProvider>
   );
 }

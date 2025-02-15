@@ -28,6 +28,7 @@ export interface TransactionItem {
   unit_price: number
   discount: number | null
   total: number
+  created_at: Date
   item: {
     id: string
     name: string
