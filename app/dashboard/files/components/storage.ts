@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB in bytes
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB in bytes
 
 // Helper function to get org path
 async function getOrgPath(subPath?: string): Promise<string> {
@@ -21,7 +21,7 @@ export async function uploadFile(file: File, path?: string) {
     
     // Check file size
     if (file.size > MAX_FILE_SIZE) {
-      throw new Error(`File size exceeds 5MB limit. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`)
+      throw new Error(`File size exceeds 10MB limit. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`)
     }
 
     const filename = `${orgPath}/${file.name}`
@@ -65,16 +65,39 @@ export async function uploadFile(file: File, path?: string) {
   }
 }
 
-export async function getFiles(path?: string) {
+export async function getFiles(path?: string, page: number = 1, limit: number = 25) {
   try {
     const orgPath = await getOrgPath(path)
     const supabase = createClient()
-    const { data, error } = await supabase.storage
+    
+    // First, get total count without limit
+    const { data: allData, error: countError } = await supabase.storage
       .from('media')
       .list(orgPath)
     
+    if (countError) throw countError
+    
+    // Then get paginated data
+    const { data, error } = await supabase.storage
+      .from('media')
+      .list(orgPath, {
+        limit: limit,
+        offset: (page - 1) * limit,
+        sortBy: { column: 'name', order: 'asc' }
+      })
+    
     if (error) throw error
-    return { data }
+    
+    // Filter out .keep files
+    const filteredData = data?.filter(file => !file.name.endsWith('.keep')) || []
+    const totalCount = allData?.filter(file => !file.name.endsWith('.keep')).length || 0
+    
+    return { 
+      data: filteredData,
+      totalCount,
+      page,
+      limit
+    }
   } catch (error) {
     console.error('Error getting files:', error)
     throw error

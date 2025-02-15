@@ -65,13 +65,24 @@ export function FileActions({ currentPath = "" }: { currentPath?: string }) {
     if (!folderName) return
 
     try {
-      const fullPath = currentPath ? `${currentPath}/${folderName}` : folderName
+      const fullPath = currentPath 
+        ? `${currentPath}/${folderName.trim()}`
+        : folderName.trim()
+        
       await createFolder(fullPath)
       setFolderName("")
       setIsCreatingFolder(false)
       router.refresh()
+      toast({
+        title: "Success",
+        description: "Folder created successfully"
+      })
     } catch (error) {
-      console.error("Error creating folder:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create folder"
+      })
     }
   }
 

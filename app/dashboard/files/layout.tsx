@@ -1,6 +1,5 @@
 import { Separator } from "@/components/ui/separator"
 import { BucketStorage } from "./components/bucket-storage"
-import { FileActions } from "./components/file-actions"
 import { FileBreadcrumbs } from "./components/file-breadcrumbs"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { Badge } from "@/components/ui/badge"
@@ -27,13 +26,7 @@ export default async function FilesLayout({
       <div className="space-y-6 p-6">
         <div className="space-y-0.5">
         <div className="flex-1">
-            <h1 className="text-3xl font-bold">{org.orgName}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold text-muted-foreground">
-                {org.orgCode}
-              </code>
-              <CopyButton value={org.orgCode} />
-            </div>
+            <h1 className="text-3xl font-bold">File Cabinet</h1>
           </div>
         </div>
         <Separator className="my-6" />
@@ -54,9 +47,6 @@ export default async function FilesLayout({
           </aside>
 
           <div className="flex-1">
-            <div className="mb-6">
-              <FileActions />
-            </div>
             {children}
           </div>
         </div>

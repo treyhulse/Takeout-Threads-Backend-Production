@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,12 +24,23 @@ import {
   FileSpreadsheetIcon,
   MoreVertical,
   Pencil,
-  Trash2
+  Trash2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 import { deleteFile, renameFile } from "@/app/dashboard/files/components/storage"
 import { useRouter } from "next/navigation"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useLocalStorage } from "@/hooks/use-local-storage"
 
 interface FileItem {
   name: string
@@ -69,12 +80,39 @@ const getThumbnailUrl = (url: string, fileName: string) => {
   return url // Return the URL directly since it's already a public URL
 }
 
-export function FileGrid({ files, view = "grid" }: { files: FileItem[], view?: "grid" | "list" }) {
+interface FileGridProps {
+  files: FileItem[]
+  view?: "grid" | "list"
+  isLoading?: boolean
+  currentPage: number
+  setCurrentPage: (page: number) => void
+  itemsPerPage: number
+  setItemsPerPage: (limit: number) => void
+  onPageChange: () => void
+}
+
+export function FileGrid({ 
+  files, 
+  view = "grid", 
+  isLoading = false,
+  currentPage,
+  setCurrentPage,
+  itemsPerPage,
+  setItemsPerPage,
+  onPageChange
+}: FileGridProps) {
   const [isRenaming, setIsRenaming] = useState(false)
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
   const [newFileName, setNewFileName] = useState("")
   const { toast } = useToast()
   const router = useRouter()
+
+  // Handle page size change
+  const handlePageSizeChange = (newSize: number) => {
+    setItemsPerPage(newSize)
+    setCurrentPage(1) // Reset to first page
+    onPageChange() // Reload data with new limit
+  }
 
   const handleDelete = async (file: FileItem) => {
     try {
@@ -151,55 +189,139 @@ export function FileGrid({ files, view = "grid" }: { files: FileItem[], view?: "
     </DropdownMenu>
   )
 
+  const PaginationControls = () => (
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-xl font-semibold">Files</h2>
+      <div className="flex items-center space-x-4">
+        <Select
+          value={itemsPerPage.toString()}
+          onValueChange={(value) => handlePageSizeChange(Number(value))}
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Select limit" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="25">25 per page</SelectItem>
+            <SelectItem value="50">50 per page</SelectItem>
+            <SelectItem value="75">75 per page</SelectItem>
+            <SelectItem value="100">100 per page</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setCurrentPage(currentPage - 1)
+              onPageChange()
+            }}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {Math.ceil(files.length / itemsPerPage)}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setCurrentPage(currentPage + 1)
+              onPageChange()
+            }}
+            disabled={currentPage === Math.ceil(files.length / itemsPerPage)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+
   if (view === "list") {
     return (
-      <div className="space-y-[1px]">
-        {files.map((file, index) => (
-          <Card key={index} className="py-[1px] px-2 hover:bg-accent">
-            <div className="flex items-center">
-              <div className="flex items-center space-x-2 w-[40%]">
-                {getFileIcon(file.name)}
-                <span className="text-xs truncate">{file.name}</span>
-              </div>
-              <div className="w-[30%] text-xs text-muted-foreground">
-                {file.meta}
-              </div>
-              <div className="w-[25%] text-xs text-muted-foreground">
-                {new Date().toLocaleDateString()}
-              </div>
-              <div className="flex-shrink-0 ml-auto">
-                <FileActions file={file} />
-              </div>
+      <div className="space-y-2">
+        <PaginationControls />
+        
+        {isLoading ? (
+          Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-[40px] w-full" />
+          ))
+        ) : files.length === 0 ? (
+          <div className="flex items-center justify-center h-24 border rounded-lg border-dashed">
+            <p className="text-sm text-muted-foreground">No files in this folder</p>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-[1px]">
+              {files.map((file, index) => (
+                <Card key={index} className="py-[1px] px-2 hover:bg-accent">
+                  <div className="flex items-center">
+                    <div className="flex items-center space-x-2 w-[40%]">
+                      {getFileIcon(file.name)}
+                      <span className="text-xs truncate">{file.name}</span>
+                    </div>
+                    <div className="w-[30%] text-xs text-muted-foreground">
+                      {file.meta}
+                    </div>
+                    <div className="w-[25%] text-xs text-muted-foreground">
+                      {new Date().toLocaleDateString()}
+                    </div>
+                    <div className="flex-shrink-0 ml-auto">
+                      <FileActions file={file} />
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
-          </Card>
-        ))}
+          </>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {files.map((file, index) => (
-        <Card key={index} className="p-4 hover:bg-accent">
-          <div className="flex justify-end mb-2">
-            <FileActions file={file} />
+    <div className="space-y-4">
+      <PaginationControls />
+      
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={index} className="h-[200px] w-full" />
+          ))}
+        </div>
+      ) : files.length === 0 ? (
+        <div className="flex items-center justify-center h-24 border rounded-lg border-dashed">
+          <p className="text-sm text-muted-foreground">No files in this folder</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {files.map((file, index) => (
+              <Card key={index} className="p-4 hover:bg-accent">
+                <div className="flex justify-end mb-2">
+                  <FileActions file={file} />
+                </div>
+                <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-2 relative overflow-hidden">
+                  {isImageFile(file.name) && file.url ? (
+                    <Image
+                      src={getThumbnailUrl(file.url, file.name) || file.url}
+                      alt={file.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    getFileIcon(file.name)
+                  )}
+                </div>
+                <h3 className="font-medium truncate">{file.name}</h3>
+                <p className="text-sm text-muted-foreground">{file.meta}</p>
+              </Card>
+            ))}
           </div>
-          <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-2 relative overflow-hidden">
-            {isImageFile(file.name) && file.url ? (
-              <Image
-                src={getThumbnailUrl(file.url, file.name) || file.url}
-                alt={file.name}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              getFileIcon(file.name)
-            )}
-          </div>
-          <h3 className="font-medium truncate">{file.name}</h3>
-          <p className="text-sm text-muted-foreground">{file.meta}</p>
-        </Card>
-      ))}
+        </>
+      )}
 
       <Dialog open={isRenaming} onOpenChange={setIsRenaming}>
         <DialogContent>
