@@ -86,7 +86,7 @@ export const navLinks = [
   },
   {
     name: "Marketplace",
-    href: "/marketplace",
+    href: "/dashboard/marketplace",
     icon: Store,
   },
 ];

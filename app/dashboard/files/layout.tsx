@@ -5,6 +5,8 @@ import { FileBreadcrumbs } from "./components/file-breadcrumbs"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { Badge } from "@/components/ui/badge"
 import { CopyButton } from "@/components/CopyButton"
+import { redirect } from "next/navigation"
+
 export default async function FilesLayout({
   children,
 }: {
@@ -12,7 +14,11 @@ export default async function FilesLayout({
 }) {
   const { getOrganization } = getKindeServerSession()
   const org = await getOrganization()
-  if (!org?.orgCode) throw new Error("No organization found")
+  
+  if (!org?.orgCode) {
+    redirect("/dashboard")
+  }
+
   const orgCode = org.orgCode
   const orgName = org.orgName
 
