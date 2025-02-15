@@ -41,7 +41,6 @@ export async function getTransactions() {
       shipping_cost: Number(t.shipping_cost),
       total_amount: Number(t.total_amount),
       tax: t.tax ? Number(t.tax) : null,
-      shipping: t.shipping ? Number(t.shipping) : null,
       items: t.items.map(item => ({
         ...item,
         total: Number(item.total),
@@ -80,7 +79,6 @@ export async function getTransactionById(id: string) {
     shipping_cost: Number(transaction.shipping_cost),
     total_amount: Number(transaction.total_amount),
     tax: transaction.tax ? Number(transaction.tax) : null,
-    shipping: transaction.shipping ? Number(transaction.shipping) : null,
     items: transaction.items.map(item => ({
       ...item,
       total: Number(item.total),
@@ -183,7 +181,6 @@ export async function updateTransactionDetails(
         shipping_cost: Number(result.shipping_cost),
         total_amount: Number(result.total_amount),
         tax: result.tax ? Number(result.tax) : null,
-        shipping: result.shipping ? Number(result.shipping) : null,
         items: result.items.map(item => ({
           ...item,
           total: Number(item.total),
@@ -204,7 +201,6 @@ export async function updateTransaction(id: string, data: TransactionUpdateInput
     ...data,
     ...(data.entity_id ? { entity_id: data.entity_id } : {}),
     tax: data.tax || undefined,
-    shipping: data.shipping || undefined,
     items: {
       // Your items update logic here
     }

@@ -18,8 +18,8 @@ export default function IntegrationsPage() {
       icon: Store,
     },
     {
-      name: "Jiffy Shirts",
-      description: "Import products and track stock levels",
+      name: "QuickBooks by Intuit",
+      description: "Accounting software for managing your business finances",
       status: "available",
       icon: Store,
     },
