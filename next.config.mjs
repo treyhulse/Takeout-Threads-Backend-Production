@@ -24,8 +24,9 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "aftkzcdfjeidbfutfhfw.supabase.co",
+        hostname: "*.supabase.co",
         port: "",
+        pathname: "/storage/v1/object/public/**",
       },
       {
         protocol: "https",
@@ -34,6 +35,11 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb'
+    }
+  }
 };
 
 export default nextConfig;

@@ -44,6 +44,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@react-email/components": "^0.0.33",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.48.1",
     "@tanstack/react-table": "^8.20.6",
     "@tiptap/html": "^2.6.1",

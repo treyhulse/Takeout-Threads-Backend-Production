@@ -79,9 +79,15 @@ model Items {
   front_image_url    String?
   back_image_url     String?
   images            Json?    // Will store an array of image URLs
+  inventory_quantity Int          @default(0)
+  low_stock_alert   Int?
+  inventory_movements InventoryMovement[]
 
   // Add this relation
   TransactionItems  TransactionItems[]
+
+  // Add these relations
+  CartItems       CartItems[]
 
   @@unique([org_id, sku])
 }
@@ -141,6 +147,9 @@ model Customers {
   // Add this relation
   transactions     Transactions[]
 
+  // Add these relations
+  carts           Cart[]
+
   @@unique([org_id, customer_id])
 }
 
@@ -175,6 +184,10 @@ model Addresses {
   // Add these new relations
   transactions_billing   Transactions[] @relation("TransactionBillingAddress")
   transactions_shipping  Transactions[] @relation("TransactionShippingAddress")
+
+  // Add these relations
+  carts_billing   Cart[] @relation("CartBillingAddress")
+  carts_shipping  Cart[] @relation("CartShippingAddress")
 
   @@unique([org_id, address_id])
 }
@@ -240,30 +253,36 @@ enum TransactionStatus {
 }
 
 model Transactions {
-  id              String           @id @default(uuid())
-  number          String           // Human readable ID
-  org_id          String
-  entity_id       String?          // Optional as not all transaction types need an entity
-  type            TransactionType
-  status          TransactionStatus @default(PENDING)
-  total           Decimal
-  tax_amount      Decimal          @default(0)
-  shipping_cost   Decimal          @default(0)
-  total_amount    Decimal          @default(0)
-  payment_status  PaymentStatus    @default(PENDING)
-  payment_method  PaymentMethod?
-  billing_address_id   String?
-  shipping_address_id  String?
-  tax             Decimal?
-  shipping        Decimal?
-  created_at      DateTime         @default(now())
-  updated_at      DateTime         @updatedAt
+  id                String            @id @default(uuid())
+  number            String            // Human readable ID
+  org_id            String
+  entity_id         String?           // Optional as not all transaction types need an entity
+  type              TransactionType
+  status            TransactionStatus @default(PENDING)
+  total             Decimal
+  tax_amount        Decimal          @default(0)
+  shipping_cost     Decimal          @default(0)
+  discount_total    Decimal          @default(0)
+  total_amount      Decimal          @default(0)
+  payment_status    PaymentStatus    @default(PENDING)
+  payment_method    PaymentMethod?
+  shipping_method   String?          // e.g., "USPS Priority", "FedEx Ground"
+  estimated_ship_date DateTime?
+  actual_ship_date   DateTime?
+  billing_address_id  String?
+  shipping_address_id String?
+  discount_id       String?          
+  tax              Decimal?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
 
   // Relations
-  items           TransactionItems[]
-  customer        Customers?       @relation(fields: [entity_id], references: [id])
+  items            TransactionItems[]
+  customer         Customers?       @relation(fields: [entity_id], references: [id])
   billing_address  Addresses?      @relation("TransactionBillingAddress", fields: [billing_address_id], references: [id])
   shipping_address Addresses?      @relation("TransactionShippingAddress", fields: [shipping_address_id], references: [id])
+  discount         Discount?       @relation(fields: [discount_id], references: [id])
+  shipments        Shipment[]     // Add the reverse relation
 
   @@unique([org_id, number])
 }
@@ -406,5 +425,123 @@ enum PaymentMethod {
   CASH
   CHECK
   OTHER
+}
+
+
+
+
+// ADDING IN CART RELATIONS
+
+model Cart {
+  id                String       @id @default(uuid())
+  org_id            String
+  customer_id       String?      
+  status            CartStatus   @default(ACTIVE)
+  total             Decimal      @default(0)
+  tax_amount        Decimal      @default(0)
+  shipping_cost     Decimal      @default(0)
+  discount_total    Decimal      @default(0)
+  total_amount      Decimal      @default(0)
+  total_weight      Decimal      @default(0)
+  billing_address_id   String?
+  shipping_address_id  String?
+  checkout_session_id  String?  
+  discount_id       String?      // Added discount relation
+  expires_at        DateTime?    
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+
+  // Relations
+  items             CartItems[]
+  customer          Customers?   @relation(fields: [customer_id], references: [id])
+  billing_address   Addresses?   @relation("CartBillingAddress", fields: [billing_address_id], references: [id])
+  shipping_address  Addresses?   @relation("CartShippingAddress", fields: [shipping_address_id], references: [id])
+  discount          Discount?    @relation(fields: [discount_id], references: [id])  // Added discount relation
+
+  @@unique([org_id, id])
+}
+
+model CartItems {  // Renamed from CartItem
+  id              String    @id @default(uuid())
+  cart_id         String
+  item_id         String
+  quantity        Int
+  unit_price      Decimal
+  total           Decimal
+
+  // Relations
+  cart            Cart      @relation(fields: [cart_id], references: [id], onDelete: Cascade)
+  item            Items     @relation(fields: [item_id], references: [id])
+
+  @@unique([cart_id, item_id])
+}
+
+enum CartStatus {
+  ACTIVE
+  CHECKOUT_IN_PROGRESS
+  CONVERTED        // When cart is converted to transaction
+  ABANDONED
+  EXPIRED
+}
+
+enum ShipmentStatus {
+  PENDING
+  PROCESSING
+  PACKED
+  SHIPPED
+  DELIVERED
+  RETURNED
+}
+
+model Shipment {
+  id              String            @id @default(uuid())
+  transaction_id  String
+  carrier         String
+  tracking_number String
+  status          ShipmentStatus    @default(PENDING)
+  shipped_at      DateTime?
+  delivered_at    DateTime?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+
+  transaction     Transactions      @relation(fields: [transaction_id], references: [id])
+}
+
+model Discount {
+  id              String       @id @default(uuid())
+  org_id          String
+  code            String
+  type            DiscountType
+  value           Decimal
+  starts_at       DateTime
+  ends_at         DateTime?
+  usage_limit     Int?
+  times_used      Int          @default(0)
+  minimum_amount  Decimal?
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  
+  // Relations
+  transactions    Transactions[]
+  carts          Cart[]        // Added cart relation
+
+  @@unique([org_id, code])
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_SHIPPING
+}
+
+model InventoryMovement {
+  id              String    @id @default(uuid())
+  item_id         String
+  quantity_change Int       // Positive for additions, negative for reductions
+  reason          String
+  reference_id    String?   // Could be transaction_id, adjustment_id, etc.
+  created_at      DateTime  @default(now())
+
+  item            Items     @relation(fields: [item_id], references: [id])
 }
 

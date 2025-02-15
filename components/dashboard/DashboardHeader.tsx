@@ -1,3 +1,5 @@
+"use server";
+
 import Link from "next/link";
 import { CircleUser } from "lucide-react";
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
@@ -13,8 +15,14 @@ import OrganizationSwitcher from "@/components/dashboard/OrganizationSwitcher";
 import { OrganizationProvider } from "@/components/dashboard/OrganizationProvider";
 import { Searchbar } from "@/components/dashboard/Searchbar";
 import { Notifications } from "@/components/dashboard/Notifications";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import Image from "next/image";
 
-export function DashboardHeader() {
+
+export async function DashboardHeader() {
+  const { getUser } = getKindeServerSession();
+  const user = await getUser();
+
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
       <OrganizationProvider />
@@ -28,7 +36,13 @@ export function DashboardHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
-              <CircleUser className="h-5 w-5" />
+              <Image
+              src={user?.picture as string} 
+              alt="User" 
+              width={32} 
+              height={32} 
+              className="rounded-full"
+              />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

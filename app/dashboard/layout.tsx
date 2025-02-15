@@ -4,7 +4,7 @@ import LightLogo from "@/public/logos/BlackLogo-Text.png";
 import DarkLogo from "@/public/logos/WhiteLogo-Text.png";
 import Image from "next/image";
 import { DashboardItems } from "@/components/dashboard/DashboardItems";
-import { Calendar, ChartNoAxesCombined, CreditCard, File, Globe, ImageIcon, LayoutDashboard, MessageCircle, Shirt, Truck, Unplug, Users } from "lucide-react";
+import { Calendar, ChartNoAxesCombined, CreditCard, File, Globe, ImageIcon, LayoutDashboard, MessageCircle, Shirt, Truck, Unplug, User, Users } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 
 
@@ -55,11 +55,15 @@ export const navLinks = [
     icon: MessageCircle,
   },
   {
+    name: "Files",
+    href: "/dashboard/files",
+    icon: File,
+  },
+  {
     name: "Analytics & Reports",
     href: "/dashboard/analytics",
     icon: ChartNoAxesCombined,
   },
-
   {
     name: "Integrations",
     href: "/dashboard/integrations",
@@ -74,6 +78,11 @@ export const navLinks = [
     name: "Organization",
     href: "/dashboard/organization",
     icon: Users,
+  },
+  {
+    name: "Profile",
+    href: "/dashboard/profile",
+    icon: User,
   },
 ];
 
