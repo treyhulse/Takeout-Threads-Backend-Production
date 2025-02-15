@@ -25,7 +25,7 @@ export async function uploadFile(file: File, path?: string) {
     }
 
     const filename = `${orgPath}/${file.name}`
-    const supabase = createClient
+    const supabase = createClient()
     
     // Check if file exists
     const { data: existingFiles } = await supabase.storage
@@ -68,7 +68,7 @@ export async function uploadFile(file: File, path?: string) {
 export async function getFiles(path?: string) {
   try {
     const orgPath = await getOrgPath(path)
-    const supabase = createClient
+    const supabase = createClient()
     const { data, error } = await supabase.storage
       .from('media')
       .list(orgPath)
@@ -84,7 +84,7 @@ export async function getFiles(path?: string) {
 export async function deleteFile(path: string) {
   try {
     const orgPath = await getOrgPath(path)
-    const supabase = createClient
+    const supabase = createClient()
     const { error } = await supabase.storage
       .from('media')
       .remove([orgPath])
@@ -100,7 +100,7 @@ export async function deleteFile(path: string) {
 export async function getFileUrl(path: string) {
   try {
     const orgPath = await getOrgPath(path)
-    const supabase = createClient
+    const supabase = createClient()
     const { data } = await supabase.storage
       .from('media')
       .getPublicUrl(`${orgPath}`)
@@ -117,7 +117,7 @@ export async function getFileUrl(path: string) {
 export async function createFolder(folderName: string) {
   try {
     const orgPath = await getOrgPath(folderName)
-    const supabase = createClient
+    const supabase = createClient()
     // Create an empty file with a trailing slash to represent a folder
     const { data, error } = await supabase.storage
       .from('media')
@@ -134,7 +134,7 @@ export async function createFolder(folderName: string) {
 export async function searchFiles(searchTerm: string) {
   try {
     const orgPath = await getOrgPath()
-    const supabase = createClient
+    const supabase = createClient()
     const { data: allFiles, error } = await supabase.storage
       .from('media')
       .list(orgPath, {
@@ -159,7 +159,7 @@ export async function searchFiles(searchTerm: string) {
 export async function renameFile(oldPath: string, newName: string) {
   try {
     const orgPath = await getOrgPath(oldPath)
-    const supabase = createClient
+    const supabase = createClient()
     const pathParts = orgPath.split('/')
     pathParts[pathParts.length - 1] = newName
     const newPath = pathParts.join('/')

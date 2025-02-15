@@ -31,7 +31,7 @@ export default function ItemsPage() {
     try {
       const { data, error } = await getItems()
       if (error) throw new Error(error)
-      const formattedData = (data || []).map(item => ({
+      const formattedData = ((data || []).map(item => ({
         ...item,
         images: (item.images as unknown) as ItemImage[] | undefined,
         description: item.description ?? undefined,
@@ -48,7 +48,7 @@ export default function ItemsPage() {
         width_unit: item.width_unit ?? undefined,
         depth_unit: item.depth_unit ?? undefined,
         tags: item.tags ?? undefined,
-      })) as Item[]
+      })) as unknown) as Item[]
       setItems(formattedData)
     } catch (error) {
       toast.error("Failed to fetch items")

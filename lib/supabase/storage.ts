@@ -28,7 +28,7 @@ export async function uploadImage(formData: FormData) {
   // Convert the File into a Buffer (required in Node)
   const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-  const { error } = await createClient.storage
+  const { error } = await createClient().storage
     .from("media")
     .upload(filePath, fileBuffer, {
       contentType: file.type,
@@ -40,7 +40,7 @@ export async function uploadImage(formData: FormData) {
   }
 
   // Retrieve and return the public URL of the uploaded file.
-  const { data: publicUrlData } = createClient.storage
+  const { data: publicUrlData } = createClient().storage
     .from("media")
     .getPublicUrl(filePath);
 
@@ -61,7 +61,7 @@ export async function getImages() {
   
   const orgCode = org.orgCode;
 
-  const { data, error } = await createClient.storage
+  const { data, error } = await createClient().storage
     .from("media")
     .list(orgCode, {
       limit: 100,
@@ -78,11 +78,15 @@ export async function getImages() {
     return [];
   }
 
-  // Map each file object to its public URL
+  // Filter for image files and map to public URLs
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
   return data
-    .filter(file => !file.name.startsWith('.'))
+    .filter(file => {
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      return extension && imageExtensions.includes(extension);
+    })
     .map((file) => {
-      const { data: publicUrlData } = createClient.storage
+      const { data: publicUrlData } = createClient().storage
         .from("media")
         .getPublicUrl(`${orgCode}/${file.name}`);
       return publicUrlData.publicUrl;
@@ -103,7 +107,7 @@ export async function deleteImages(urls: string[]) {
     return `${org.orgCode}/${fileName}`;
   });
 
-  const { error } = await createClient.storage
+  const { error } = await createClient().storage
     .from("media")
     .remove(filePaths);
 
