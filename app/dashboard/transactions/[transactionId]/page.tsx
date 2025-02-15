@@ -1,107 +1,104 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft } from "lucide-react"
-import { TransactionItems } from "@/components/transactions/transaction-items"
-import { useEffect } from "react"
+import { ChevronLeft, Save } from "lucide-react"
 import { getTransactionById, updateTransactionDetails } from "@/lib/supabase/transactions"
-import { Transaction } from "@/types/transactions"
-import { TransactionCustomerDetails } from "@/components/transactions/transaction-customer-details"
-import { TransactionSummary } from "@/components/transactions/transaction-summary"
+import { Transaction, TransactionItem } from "@/types/transactions"
 import { toast } from "sonner"
 import { Address } from "@/types/addresses"
 import { cn } from "@/lib/utils"
 
-export default function TransactionPage({
-  params
-}: {
+// Components (these will need to be created)
+import { TransactionHeader } from "@/components/transactions/transaction-header"
+import { TransactionSummary } from "@/components/transactions/transaction-summary"
+import { TransactionCustomer } from "@/components/transactions/transaction-customer"
+import { TransactionAddresses } from "@/components/transactions/transaction-addresses"
+import { TransactionItems } from "@/components/transactions/transaction-items"
+import { TransactionShipments } from "@/components/transactions/transaction-shipments"
+import { TransactionPayments } from "@/components/transactions/transaction-payments"
+import { TransactionHistory } from "@/components/transactions/transaction-history"
+import { TransactionNotes } from "@/components/transactions/transaction-notes"
+
+interface TransactionPageProps {
   params: { transactionId: string }
-}) {
+}
+
+export default function TransactionPage({ params }: TransactionPageProps) {
   const router = useRouter()
   const [transaction, setTransaction] = useState<Transaction | null>(null)
-  const [pendingChanges, setPendingChanges] = useState({
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  
+  // State for tracking changes
+  const [changes, setChanges] = useState({
     entity_id: undefined as string | undefined,
     billing_address_id: undefined as string | undefined,
     shipping_address_id: undefined as string | undefined,
+    items: [] as Partial<TransactionItem>[],
+    status: undefined as string | undefined,
+    shipping_method: undefined as string | undefined,
+    payment_status: undefined as string | undefined,
+    payment_method: undefined as string | undefined,
   })
-  const [isSaving, setIsSaving] = useState(false)
 
-  useEffect(() => {
-    const loadTransaction = async () => {
+  const loadTransaction = useCallback(async () => {
+    setIsLoading(true)
+    try {
       const data = await getTransactionById(params.transactionId)
       setTransaction(data)
+    } catch (error) {
+      toast.error("Failed to load transaction")
+    } finally {
+      setIsLoading(false)
     }
-    loadTransaction()
   }, [params.transactionId])
 
-  const handleBillingAddressChange = (address: Address) => {
-    setPendingChanges(prev => ({
-      ...prev,
-      billing_address_id: address.id
-    }))
-  }
-
-  const handleShippingAddressChange = (address: Address) => {
-    setPendingChanges(prev => ({
-      ...prev,
-      shipping_address_id: address.id
-    }))
-  }
-
-  const handleCustomerChange = (customerId: string) => {
-    setPendingChanges(prev => ({
-      ...prev,
-      entity_id: customerId
-    }))
-  }
+  useEffect(() => {
+    loadTransaction()
+  }, [params.transactionId, loadTransaction])
 
   const handleSaveChanges = async () => {
     if (!transaction) return
 
-    const changes = Object.entries(pendingChanges).reduce((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key as keyof typeof pendingChanges] = value
-      }
-      return acc
-    }, {} as Partial<typeof pendingChanges>)
-
-    if (Object.keys(changes).length === 0) {
-      toast.info("No changes to save")
-      return
-    }
-
     setIsSaving(true)
     try {
       const result = await updateTransactionDetails(transaction.id, changes)
-      if (result.error) {
-        throw new Error(result.error)
-      }
+      if (result.error) throw new Error(result.error)
+      
       setTransaction(result.data)
-      setPendingChanges({
+      setChanges({
         entity_id: undefined,
         billing_address_id: undefined,
         shipping_address_id: undefined,
+        items: [],
+        status: undefined,
+        shipping_method: undefined,
+        payment_status: undefined,
+        payment_method: undefined,
       })
       toast.success("Changes saved successfully")
     } catch (error) {
       toast.error("Failed to save changes")
-      console.error(error)
     } finally {
       setIsSaving(false)
     }
   }
 
-  if (!transaction) return null
+  if (isLoading || !transaction) {
+    return <div className="p-6">Loading...</div>
+  }
 
-  const hasChanges = Object.values(pendingChanges).some(value => value !== undefined)
+  const hasChanges = Object.values(changes).some(value => 
+    value !== undefined && (Array.isArray(value) ? value.length > 0 : true)
+  )
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen space-y-6 p-6">
+      {/* Header with Back Button and Save Changes */}
       <div className="flex justify-between items-center">
         <Button
           variant="ghost"
@@ -110,14 +107,20 @@ export default function TransactionPage({
           <ChevronLeft className="mr-2 h-4 w-4" />
           Back to Transactions
         </Button>
+        
         {hasChanges && (
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => setPendingChanges({
+              onClick={() => setChanges({
                 entity_id: undefined,
                 billing_address_id: undefined,
                 shipping_address_id: undefined,
+                items: [],
+                status: undefined,
+                shipping_method: undefined,
+                payment_status: undefined,
+                payment_method: undefined,
               })}
             >
               Cancel
@@ -125,81 +128,101 @@ export default function TransactionPage({
             <Button 
               onClick={handleSaveChanges}
               disabled={isSaving}
+              className="gap-2"
             >
+              <Save className="h-4 w-4" />
               Save Changes
             </Button>
           </div>
         )}
       </div>
 
-      <div className="flex justify-between items-center">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">
-              {transaction.number}
-            </h1>
-            <div className={cn(
-              "px-3 py-1 rounded-md text-sm font-medium",
-              transaction.status === "COMPLETED" && "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-100",
-              transaction.status === "PENDING" && "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-100",
-              transaction.status === "APPROVED" && "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100",
-              transaction.status === "CANCELED" && "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100"
-            )}>
-              {transaction.status.charAt(0) + transaction.status.slice(1).toLowerCase()}
-            </div>
-          </div>
-          <p className="text-muted-foreground mt-1">
-            {transaction.customer ? 
-              transaction.customer.company_name || 
-              `${transaction.customer.first_name} ${transaction.customer.last_name}` 
-              : 'No Customer'}
-          </p>
-        </div>
-      </div>
+      {/* Transaction Header */}
+      <TransactionHeader 
+        transaction={transaction}
+        onStatusChange={(status) => setChanges(prev => ({ ...prev, status }))}
+      />
 
+      {/* Transaction Summary */}
       <TransactionSummary transaction={transaction} />
 
+      {/* Main Content Tabs */}
       <Tabs defaultValue="details" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="items">Items</TabsTrigger>
+          <TabsTrigger value="shipping">Shipping</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="details">
-          <div className="space-y-6">
-            <TransactionCustomerDetails
-              customerId={transaction.entity_id || undefined}
-              billingAddressId={transaction.billing_address_id || undefined}
-              shippingAddressId={transaction.shipping_address_id || undefined}
-              onCustomerChange={handleCustomerChange}
-              onBillingAddressChange={handleBillingAddressChange}
-              onShippingAddressChange={handleShippingAddressChange}
-              pendingChanges={pendingChanges}
+          <div className="grid gap-6 md:grid-cols-2">
+            <TransactionCustomer
+              transaction={transaction}
+              onChange={(customerId) => setChanges(prev => ({ 
+                ...prev, 
+                entity_id: customerId 
+              }))}
+            />
+            <TransactionAddresses
+              transaction={transaction}
+              onBillingChange={(address) => setChanges(prev => ({ 
+                ...prev, 
+                billing_address_id: address.id 
+              }))}
+              onShippingChange={(address) => setChanges(prev => ({ 
+                ...prev, 
+                shipping_address_id: address.id 
+              }))}
+            />
+            <TransactionNotes
+              transaction={transaction}
+              onChange={(notes) => setChanges(prev => ({ ...prev, notes }))}
             />
           </div>
         </TabsContent>
 
         <TabsContent value="items">
           <Card>
-            <CardContent className="pt-6">
-              <TransactionItems 
-                transactionId={transaction.id}
-                items={transaction.items}
-                onUpdate={() => router.refresh()}
-              />
-            </CardContent>
+            <TransactionItems
+              transaction={transaction}
+              onItemsChange={(items) => setChanges(prev => ({ ...prev, items }))}
+            />
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="shipping">
+          <Card>
+            <TransactionShipments
+              transaction={transaction}
+              onShippingMethodChange={(method) => setChanges(prev => ({ 
+                ...prev, 
+                shipping_method: method 
+              }))}
+            />
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <Card>
+            <TransactionPayments
+              transaction={transaction}
+              onPaymentStatusChange={(status) => setChanges(prev => ({ 
+                ...prev, 
+                payment_status: status 
+              }))}
+              onPaymentMethodChange={(method) => setChanges(prev => ({ 
+                ...prev, 
+                payment_method: method 
+              }))}
+            />
           </Card>
         </TabsContent>
 
         <TabsContent value="history">
           <Card>
-            <CardHeader>
-              <CardTitle>History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Transaction history component will go here */}
-            </CardContent>
+            <TransactionHistory transaction={transaction} />
           </Card>
         </TabsContent>
       </Tabs>

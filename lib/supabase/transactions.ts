@@ -66,7 +66,8 @@ export async function getTransactionById(id: string) {
       },
       customer: true,
       billing_address: true,
-      shipping_address: true
+      shipping_address: true,
+      shipments: true
     }
   })
 
@@ -78,6 +79,7 @@ export async function getTransactionById(id: string) {
     tax_amount: Number(transaction.tax_amount),
     shipping_cost: Number(transaction.shipping_cost),
     total_amount: Number(transaction.total_amount),
+    discount_total: Number(transaction.discount_total),
     tax: transaction.tax ? Number(transaction.tax) : null,
     items: transaction.items.map(item => ({
       ...item,
@@ -169,6 +171,7 @@ export async function updateTransactionDetails(
         customer: true,
         billing_address: true,
         shipping_address: true,
+        shipments: true,
       },
     })
 
@@ -180,6 +183,7 @@ export async function updateTransactionDetails(
         tax_amount: Number(result.tax_amount),
         shipping_cost: Number(result.shipping_cost),
         total_amount: Number(result.total_amount),
+        discount_total: Number(result.discount_total),
         tax: result.tax ? Number(result.tax) : null,
         items: result.items.map(item => ({
           ...item,

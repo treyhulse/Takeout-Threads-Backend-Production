@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client"
 import { Item } from "./items"
+import { Decimal } from "@prisma/client/runtime/library"
 
 export interface TransactionItemWithDetails {
   id: string
@@ -7,9 +8,9 @@ export interface TransactionItemWithDetails {
   item_id: string
   quantity: number
   price_level: string | null
-  unit_price: number
-  discount: number | null
-  total: number
+  unit_price: Decimal
+  discount: Decimal | null
+  total: Decimal
   item: {
     id: string
     name: string
@@ -22,8 +23,8 @@ export type TransactionItemCreateInput = {
   item_id: string
   quantity: number
   unit_price: number
-  price_level?: string
-  discount?: number
+  price_level?: string | null
+  discount?: number | null
   total: number
 }
 
