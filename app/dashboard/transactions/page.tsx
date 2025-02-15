@@ -30,7 +30,19 @@ export default function TransactionsPage() {
     try {
       const { data, error } = await getTransactions()
       if (error) throw new Error(error)
-      setTransactions(data || [])
+      const safeData = data?.map(item => ({
+        ...item,
+        billing_address: null,
+        shipping_address: null,
+        shipments: [],
+        discount_total: Number(item.discount_total),
+        total: Number(item.total),
+        tax_amount: Number(item.tax_amount),
+        shipping_cost: Number(item.shipping_cost),
+        total_amount: Number(item.total_amount),
+        items: item.items.map(i => ({ ...i, created_at: new Date() }))
+      })) || []
+      setTransactions(safeData)
     } catch (error) {
       toast.error("Failed to fetch transactions")
     } finally {

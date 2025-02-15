@@ -85,7 +85,7 @@ export function ItemDimensions({ item, onUpdate }: ItemDimensionsProps) {
             <label className="text-sm font-medium">Weight Unit</label>
             <Select
               value={formData.weight_unit}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, weight_unit: value }))}
+              onValueChange={(value: "OUNCE" | "POUND") => setFormData(prev => ({ ...prev, weight_unit: value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select unit" />
@@ -135,7 +135,7 @@ export function ItemDimensions({ item, onUpdate }: ItemDimensionsProps) {
           <label className="text-sm font-medium">Dimension Unit</label>
           <Select
             value={formData.length_unit}
-            onValueChange={(value) => setFormData(prev => ({ 
+            onValueChange={(value: "INCH" | "CENTIMETER" | "FOOT") => setFormData(prev => ({ 
               ...prev, 
               length_unit: value,
               width_unit: value,
