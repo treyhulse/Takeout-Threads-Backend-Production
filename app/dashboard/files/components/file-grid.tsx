@@ -44,18 +44,18 @@ const getFileIcon = (fileName: string) => {
     case 'csv':
     case 'xlsx':
     case 'xls':
-      return <FileSpreadsheetIcon className="h-10 w-10 text-green-500" />
+      return <FileSpreadsheetIcon className="h-4 w-4 text-green-500" />
     case 'pdf':
-      return <FileIcon className="h-10 w-10 text-red-500" />
+      return <FileIcon className="h-4 w-4 text-red-500" />
     case 'png':
     case 'jpg':
     case 'jpeg':
     case 'gif':
-      return <ImageIcon className="h-10 w-10 text-blue-500" />
+      return <ImageIcon className="h-4 w-4 text-blue-500" />
     case 'txt':
-      return <FileTextIcon className="h-10 w-10 text-gray-500" />
+      return <FileTextIcon className="h-4 w-4 text-gray-500" />
     default:
-      return <FileIcon className="h-10 w-10 text-muted-foreground" />
+      return <FileIcon className="h-4 w-4 text-muted-foreground" />
   }
 }
 
@@ -153,27 +153,23 @@ export function FileGrid({ files, view = "grid" }: { files: FileItem[], view?: "
 
   if (view === "list") {
     return (
-      <div className="space-y-2">
+      <div className="space-y-[1px]">
         {files.map((file, index) => (
-          <Card key={index} className="p-4 hover:bg-accent">
-            <div className="flex items-center space-x-4">
-              {isImageFile(file.name) && file.url ? (
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={getThumbnailUrl(file.url, file.name) || file.url}
-                    alt={file.name}
-                    fill
-                    className="object-cover rounded"
-                  />
-                </div>
-              ) : (
-                getFileIcon(file.name)
-              )}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium truncate">{file.name}</h3>
-                <p className="text-sm text-muted-foreground">{file.meta}</p>
+          <Card key={index} className="py-[1px] px-2 hover:bg-accent">
+            <div className="flex items-center">
+              <div className="flex items-center space-x-2 w-[40%]">
+                {getFileIcon(file.name)}
+                <span className="text-xs truncate">{file.name}</span>
               </div>
-              <FileActions file={file} />
+              <div className="w-[30%] text-xs text-muted-foreground">
+                {file.meta}
+              </div>
+              <div className="w-[25%] text-xs text-muted-foreground">
+                {new Date().toLocaleDateString()}
+              </div>
+              <div className="flex-shrink-0 ml-auto">
+                <FileActions file={file} />
+              </div>
             </div>
           </Card>
         ))}

@@ -8,9 +8,9 @@ export function FileBreadcrumbs() {
   
   const getBreadcrumbItems = () => {
     const paths = pathname.split('/').filter(Boolean)
-    const items = [{ href: '/files', label: 'Files' }]
+    const items = [{ href: '/dashboard/files', label: 'Files' }]
     
-    let currentPath = '/files'
+    let currentPath = '/dashboard/files'
     paths.slice(1).forEach(path => {
       currentPath += `/${path}`
       items.push({
