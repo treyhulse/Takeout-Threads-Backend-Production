@@ -179,7 +179,7 @@ export async function getItemTransactions(itemId: string) {
     
     if (!org?.orgCode) throw new Error("No organization found")
 
-    const transactions = await prisma.transactionItems.findMany({
+    const transactionItems = await prisma.transactionItems.findMany({
       where: {
         item_id: itemId,
         item: {
@@ -187,22 +187,36 @@ export async function getItemTransactions(itemId: string) {
         }
       },
       include: {
-        transaction: true,
-        item: {
+        transaction: {
           select: {
-            name: true,
-            sku: true
+            number: true,
+            type: true,
+            status: true,
+            created_at: true
           }
         }
       },
+      orderBy: {
+        transaction: {
+          created_at: 'desc'
+        }
+      }
     })
 
     return { 
-      data: transactions.map(transaction => ({
-        ...transaction,
-        unit_price: Number(transaction.unit_price),
-        total: Number(transaction.total),
-        discount: transaction.discount ? Number(transaction.discount) : null
+      data: transactionItems.map(item => ({
+        id: item.id,
+        transaction_id: item.transaction_id,
+        quantity: item.quantity,
+        unit_price: Number(item.unit_price),
+        discount: item.discount ? Number(item.discount) : null,
+        total: Number(item.total),
+        transaction: {
+          number: item.transaction.number,
+          type: item.transaction.type,
+          status: item.transaction.status,
+          created_at: item.transaction.created_at
+        }
       })), 
       error: null 
     }

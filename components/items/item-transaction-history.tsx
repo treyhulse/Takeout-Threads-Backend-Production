@@ -64,11 +64,11 @@ export function ItemTransactionHistory({ itemId }: ItemTransactionHistoryProps) 
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Transaction ID</TableHead>
+              <TableHead>Transaction #</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Quantity</TableHead>
               <TableHead>Unit Price</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -79,28 +79,23 @@ export function ItemTransactionHistory({ itemId }: ItemTransactionHistoryProps) 
                 </TableCell>
               </TableRow>
             ) : (
-              transactions.map((transaction) => (
-                <TableRow key={transaction.id}>
+              transactions.map((item) => (
+                <TableRow key={item.id}>
                   <TableCell>
-                    {formatDate(new Date(transaction.created_at))}
+                    {formatDate(new Date(item.transaction.created_at))}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {transaction.transaction_id}
-                  </TableCell>
-                  <TableCell>{transaction.quantity}</TableCell>
-                  <TableCell>
-                    {formatCurrency(transaction.unit_price)}
+                    {item.transaction.number}
                   </TableCell>
                   <TableCell>
-                    {formatCurrency(transaction.total)}
+                    <span className="capitalize">{item.transaction.type.toLowerCase()}</span>
                   </TableCell>
+                  <TableCell>{item.quantity}</TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${transaction.transaction.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
-                        transaction.transaction.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-gray-100 text-gray-800'}`}>
-                      {transaction.transaction.status}
-                    </span>
+                    {formatCurrency(item.unit_price)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(item.total)}
                   </TableCell>
                 </TableRow>
               ))
