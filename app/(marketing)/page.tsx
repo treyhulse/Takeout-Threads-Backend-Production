@@ -8,7 +8,6 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Hero } from "@/components/frontend/Hero";
 import { Logos } from "@/components/frontend/Logos";
 import { Features } from "@/components/frontend/Features";
-import PricingTable from "@/components/PricingTable";
 import { redirect } from "next/navigation";
 import { SocialProof } from "@/components/frontend/SocialProof";
 
@@ -27,7 +26,6 @@ export default async function Home() {
       <Hero />
       <Logos />
       <Features />
-      <PricingTable />
       <SocialProof />
     </div>
   );
