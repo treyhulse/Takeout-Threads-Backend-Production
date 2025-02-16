@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { Menu } from "lucide-react"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,11 +15,15 @@ import {
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle"
 import { LoginLink, RegisterLink } from "@kinde-oss/kinde-auth-nextjs/components"
-
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 export default function Navigation() {
   return (
-    <div className="flex h-16 w-full items-center justify-between bg-blue-950 px-6">
+    <div className="container flex h-16 items-center justify-between">
       <Link href="/" className="flex items-center gap-2">
         <Image
           src="/logos/WhiteLogo-Text.png"
@@ -100,18 +105,42 @@ export default function Navigation() {
       </NavigationMenu>
 
       <div className="flex items-center gap-4">
-      <nav className="hidden md:flex md:justify-end md:space-x-4">
-          <ThemeToggle />
+        <ThemeToggle />
+        <div className="hidden md:flex md:gap-2">
           <LoginLink>
             <Button variant="secondary">Sign in</Button>
           </LoginLink>
           <RegisterLink>
             <Button>Sign up</Button>
           </RegisterLink>
-        </nav>
+        </div>
+
+        <Sheet>
+          <SheetTrigger asChild className="lg:hidden">
+            <Button variant="ghost" size="icon" className="text-white">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+            <div className="flex flex-col gap-4 py-4">
+              <Link href="/products" className="text-sm">Products</Link>
+              <Link href="/solutions" className="text-sm">Solutions</Link>
+              <Link href="/customers" className="text-sm">Customers</Link>
+              <Link href="/resources" className="text-sm">Resources</Link>
+              <Link href="/pricing" className="text-sm">Pricing</Link>
+              <Link href="/dashboard" className="text-sm">Dashboard</Link>
+              <div className="md:hidden flex flex-col gap-2 pt-4">
+                <LoginLink>
+                  <Button variant="secondary" className="w-full">Sign in</Button>
+                </LoginLink>
+                <RegisterLink>
+                  <Button className="w-full">Sign up</Button>
+                </RegisterLink>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
-
   )
 }
-
