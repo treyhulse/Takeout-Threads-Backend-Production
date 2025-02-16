@@ -17,7 +17,7 @@ export function DashboardItems() {
             pathname == item.href
               ? "bg-muted text-primary"
               : "text-muted-foreground bg-none",
-            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary/70"
+            "flex items-center gap-3 rounded-lg px-2 py-2 md:px-3 transition-all hover:text-primary/70 text-sm md:text-base"
           )}
         >
           <item.icon className="size-4" />

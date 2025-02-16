@@ -6,7 +6,9 @@ import Image from "next/image";
 import { DashboardItems } from "@/components/dashboard/DashboardItems";
 import { BadgeDollarSign, Calendar, ChartNoAxesCombined, CreditCard, File, Globe, ImageIcon, LayoutDashboard, MessageCircle, Shirt, Store, Truck, Unplug, User, Users } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const navLinks = [
   {
@@ -89,6 +91,43 @@ export const navLinks = [
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <section className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      {/* Mobile Navigation */}
+      <Sheet>
+        <SheetTrigger asChild className="absolute left-4 top-3 z-50 md:hidden">
+          <Button variant="ghost" size="icon">
+            <Menu className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-[280px] p-0">
+          <div className="flex h-full flex-col gap-2">
+            <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+              <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+                <Image 
+                  src={LightLogo} 
+                  alt="Takeout Threads" 
+                  width={100}
+                  height={100}
+                  className="block dark:hidden"
+                />
+                <Image 
+                  src={DarkLogo} 
+                  alt="Takeout Threads" 
+                  width={100}
+                  height={100}
+                  className="hidden dark:block"
+                />
+              </Link>
+            </div>
+            <div className="flex-1">
+              <nav className="grid items-start px-2 font-medium">
+                <DashboardItems />
+              </nav>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
       <div className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
