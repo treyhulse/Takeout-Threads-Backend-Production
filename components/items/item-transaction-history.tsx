@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import {
   Table,
   TableBody,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/card"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { getItemTransactions } from "@/lib/supabase/items"
+import { Button } from "@/components/ui/button"
 
 interface ItemTransactionHistoryProps {
   itemId: string
@@ -63,8 +65,8 @@ export function ItemTransactionHistory({ itemId }: ItemTransactionHistoryProps) 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
               <TableHead>Transaction #</TableHead>
+              <TableHead>Date</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Quantity</TableHead>
               <TableHead>Unit Price</TableHead>
@@ -82,10 +84,16 @@ export function ItemTransactionHistory({ itemId }: ItemTransactionHistoryProps) 
               transactions.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>
-                    {formatDate(new Date(item.transaction.created_at))}
+                    <Link 
+                      href={`/dashboard/transactions/${item.transaction_id}`}
+                      target="_blank"
+                      className="text-primary hover:underline"
+                    >
+                      {item.transaction.number}
+                    </Link>
                   </TableCell>
-                  <TableCell className="font-medium">
-                    {item.transaction.number}
+                  <TableCell>
+                    {formatDate(new Date(item.transaction.created_at))}
                   </TableCell>
                   <TableCell>
                     <span className="capitalize">{item.transaction.type.toLowerCase()}</span>
