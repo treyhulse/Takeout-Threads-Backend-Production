@@ -4,7 +4,7 @@ import LightLogo from "@/public/logos/BlackLogo-Text.png";
 import DarkLogo from "@/public/logos/WhiteLogo-Text.png";
 import Image from "next/image";
 import { DashboardItems } from "@/components/dashboard/DashboardItems";
-import { BadgeDollarSign, Calendar, ChartNoAxesCombined, CreditCard, File, Globe, ImageIcon, LayoutDashboard, MessageCircle, Shirt, Store, Truck, Unplug, User, Users } from "lucide-react";
+import { BadgeDollarSign, Calendar, ChartNoAxesCombined, CreditCard, File, Globe, ImageIcon, LayoutDashboard, MessageCircle, Shirt, ShoppingCart, Store, Truck, Unplug, User, Users } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
@@ -85,6 +85,11 @@ export const navLinks = [
     name: "Marketplace",
     href: "/dashboard/marketplace",
     icon: Store,
+  },
+  {
+    name: "Carts",
+    href: "/dashboard/carts",
+    icon: ShoppingCart,
   },
 ];
 
