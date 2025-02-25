@@ -1,6 +1,6 @@
 import Image from "next/image";
-import KindeLogo from "@/public/logos/kinde.svg";
-import Nextjs from "@/public/logos/nextjs.svg";
+import KindeLogo from "@/public/logos/BB.png";
+import Nextjs from "@/public/logos/nike.jpg";
 
 export function Logos() {
   return (

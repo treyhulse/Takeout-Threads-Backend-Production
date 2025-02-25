@@ -435,7 +435,8 @@ enum PaymentMethod {
 model Cart {
   id                String       @id @default(uuid())
   org_id            String
-  customer_id       String?      
+  user_id           String      // Supabase auth user_id
+  customer_id       String?     // Optional link to Customers model
   status            CartStatus   @default(ACTIVE)
   total             Decimal      @default(0)
   tax_amount        Decimal      @default(0)
@@ -446,7 +447,7 @@ model Cart {
   billing_address_id   String?
   shipping_address_id  String?
   checkout_session_id  String?  
-  discount_id       String?      // Added discount relation
+  discount_id       String?      
   expires_at        DateTime?    
   created_at        DateTime     @default(now())
   updated_at        DateTime     @updatedAt
@@ -456,7 +457,7 @@ model Cart {
   customer          Customers?   @relation(fields: [customer_id], references: [id])
   billing_address   Addresses?   @relation("CartBillingAddress", fields: [billing_address_id], references: [id])
   shipping_address  Addresses?   @relation("CartShippingAddress", fields: [shipping_address_id], references: [id])
-  discount          Discount?    @relation(fields: [discount_id], references: [id])  // Added discount relation
+  discount          Discount?    @relation(fields: [discount_id], references: [id])
 
   @@unique([org_id, id])
 }
