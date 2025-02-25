@@ -42,13 +42,7 @@ export function PreviewButton({ itemSku, itemName }: PreviewButtonProps) {
   }, [open])
 
   const getPreviewUrl = (store: Store) => {
-    const formattedName = itemName
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-    
-    return `https://${store.subdomain}.takeout-threads.app/products/${formattedName}`
+    return `https://${store.subdomain}.takeout-threads.app/products/${itemSku}`
   }
 
   return (
