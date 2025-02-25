@@ -17,11 +17,6 @@ export const navLinks = [
     icon: LayoutDashboard,
   },
   {
-    name: "Calendar",
-    href: "/dashboard/calendar",
-    icon: Calendar,
-  },
-  {
     name: "Items",
     href: "/dashboard/items",
     icon: Shirt,
@@ -80,11 +75,6 @@ export const navLinks = [
     name: "Profile",
     href: "/dashboard/profile",
     icon: User,
-  },
-  {
-    name: "Marketplace",
-    href: "/dashboard/marketplace",
-    icon: Store,
   },
   {
     name: "Carts",

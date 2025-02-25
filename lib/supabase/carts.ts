@@ -12,7 +12,7 @@ export async function createCart() {
     const org = await getOrganization()
     
     if (!org?.orgCode) throw new Error("No organization found")
-
+    const user = await getKindeServerSession().getUser()
     const cart = await prisma.cart.create({
       data: {
         org_id: org.orgCode,
@@ -23,6 +23,7 @@ export async function createCart() {
         discount_total: 0,
         total_amount: 0,
         total_weight: 0,
+        user_id: user.id,
       },
     })
 
