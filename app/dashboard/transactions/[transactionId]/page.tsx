@@ -66,7 +66,19 @@ export default function TransactionPage({ params }: TransactionPageProps) {
 
     setIsSaving(true)
     try {
-      const result = await updateTransactionDetails(transaction.id, changes)
+      // Filter out any items that don't have the required fields
+      const validItems = changes.items.filter(item => 
+        item.item_id && 
+        item.quantity && 
+        item.unit_price !== undefined && 
+        item.total !== undefined
+      )
+
+      const result = await updateTransactionDetails(transaction.id, {
+        ...changes,
+        items: validItems
+      })
+      
       if (result.error) throw new Error(result.error)
       
       setTransaction(result.data)

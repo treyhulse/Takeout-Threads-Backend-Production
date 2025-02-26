@@ -5,6 +5,31 @@ import { TransactionCreateInput, TransactionUpdateInput } from "@/types/transact
 import { TransactionType } from "@prisma/client"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { revalidatePath } from "next/cache"
+import { Decimal } from "@prisma/client/runtime/library"
+
+// Helper function to convert Decimal to number and handle dates
+const convertDecimalToNumber = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj
+  if (typeof obj !== 'object') return obj
+  
+  if (obj instanceof Decimal) {
+    return Number(obj)
+  }
+
+  if (obj instanceof Date) {
+    return obj.toISOString()
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(convertDecimalToNumber)
+  }
+  
+  const converted: any = {}
+  for (const key in obj) {
+    converted[key] = convertDecimalToNumber(obj[key])
+  }
+  return converted
+}
 
 export async function getTransactions() {
   try {
@@ -34,21 +59,8 @@ export async function getTransactions() {
       }
     })
 
-    const data = transactions.map(t => ({
-      ...t,
-      total: Number(t.total),
-      tax_amount: Number(t.tax_amount),
-      shipping_cost: Number(t.shipping_cost),
-      total_amount: Number(t.total_amount),
-      tax: t.tax ? Number(t.tax) : null,
-      items: t.items.map(item => ({
-        ...item,
-        total: Number(item.total),
-        unit_price: Number(item.unit_price),
-        discount: item.discount ? Number(item.discount) : null
-      }))
-    }))
-
+    // Convert all Decimal values to numbers
+    const data = convertDecimalToNumber(transactions)
     return { data, error: null }
   } catch (error) {
     return { data: null, error: 'Failed to fetch transactions' }
@@ -73,22 +85,8 @@ export async function getTransactionById(id: string) {
 
   if (!transaction) return null
 
-  return {
-    ...transaction,
-    total: Number(transaction.total),
-    tax_amount: Number(transaction.tax_amount),
-    shipping_cost: Number(transaction.shipping_cost),
-    total_amount: Number(transaction.total_amount),
-    discount_total: Number(transaction.discount_total),
-    tax: transaction.tax ? Number(transaction.tax) : null,
-    items: transaction.items.map(item => ({
-      ...item,
-      created_at: transaction.created_at,
-      total: Number(item.total),
-      unit_price: Number(item.unit_price),
-      discount: item.discount ? Number(item.discount) : null
-    }))
-  }
+  // Convert all Decimal values to numbers
+  return convertDecimalToNumber(transaction)
 }
 
 export async function createTransaction(data: TransactionCreateInput) {
@@ -116,7 +114,7 @@ export async function createTransaction(data: TransactionCreateInput) {
   // Generate new number
   const number = `${data.type}-${(lastNumber + 1).toString().padStart(6, '0')}`
 
-  return await prisma.transactions.create({
+  const result = await prisma.transactions.create({
     data: {
       ...data,
       org_id: org.orgCode,
@@ -135,12 +133,16 @@ export async function createTransaction(data: TransactionCreateInput) {
       customer: true,
     },
   })
+
+  // Convert all Decimal values to numbers
+  return convertDecimalToNumber(result)
 }
 
 interface TransactionDetailsUpdate {
   entity_id?: string | null
   billing_address_id?: string | null
   shipping_address_id?: string | null
+  items?: any[]
 }
 
 export async function updateTransactionDetails(
@@ -152,6 +154,72 @@ export async function updateTransactionDetails(
     const org = await getOrganization()
     
     if (!org?.orgCode) throw new Error("No organization found")
+
+    // First, handle the items if they exist
+    if (data.items && data.items.length > 0) {
+      // Check for duplicate items in the new items array
+      const itemIds = data.items.map(item => item.item_id)
+      const duplicateItemId = itemIds.find((id, index) => itemIds.indexOf(id) !== index)
+      if (duplicateItemId) {
+        // Find the item name for better error message
+        const duplicateItem = data.items.find(item => item.item_id === duplicateItemId)
+        return {
+          data: null,
+          error: `Cannot add duplicate item: ${duplicateItem?.item?.name || 'Item'}. Please update the quantity instead.`
+        }
+      }
+
+      // Get existing items for this transaction
+      const existingItems = await prisma.transactionItems.findMany({
+        where: { transaction_id: id },
+        select: { id: true, item_id: true }
+      })
+
+      // Create a map of existing items by item_id
+      const existingItemsMap = new Map(
+        existingItems.map(item => [item.item_id, item.id])
+      )
+
+      // Process each item
+      await Promise.all(
+        data.items.map(async (item) => {
+          const existingItemId = existingItemsMap.get(item.item_id)
+          
+          // Calculate the total for the line item
+          const quantity = Number(item.quantity) || 0
+          const unitPrice = Number(item.unit_price) || 0
+          const discount = Number(item.discount) || 0
+          const lineTotal = (quantity * unitPrice) - discount
+
+          if (existingItemId) {
+            // Update existing item
+            await prisma.transactionItems.update({
+              where: { id: existingItemId },
+              data: {
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                price_level: item.price_level,
+                discount: item.discount || 0,
+                total: lineTotal,
+              },
+            })
+          } else {
+            // Create new item
+            await prisma.transactionItems.create({
+              data: {
+                transaction_id: id,
+                item_id: item.item_id,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                price_level: item.price_level,
+                discount: item.discount || 0,
+                total: lineTotal,
+              },
+            })
+          }
+        })
+      )
+    }
 
     const result = await prisma.transactions.update({
       where: { 
@@ -176,24 +244,41 @@ export async function updateTransactionDetails(
       },
     })
 
-    // Convert Decimal values to numbers
-    return {
-      data: {
-        ...result,
-        total: Number(result.total),
-        tax_amount: Number(result.tax_amount),
-        shipping_cost: Number(result.shipping_cost),
-        total_amount: Number(result.total_amount),
-        discount_total: Number(result.discount_total),
-        tax: result.tax ? Number(result.tax) : null,
-        items: result.items.map(item => ({
-          ...item,
-          created_at: result.created_at,
-          total: Number(item.total),
-          unit_price: Number(item.unit_price),
-          discount: item.discount ? Number(item.discount) : null
-        }))
+    // Update the transaction total and related amounts
+    const subtotal = result.items.reduce((sum, item) => sum + Number(item.total), 0)
+    const tax_amount = Number(result.tax_amount) || 0
+    const shipping_cost = Number(result.shipping_cost) || 0
+    const total_amount = subtotal + tax_amount + shipping_cost
+
+    await prisma.transactions.update({
+      where: { id },
+      data: { 
+        total: subtotal,
+        total_amount,
+        tax_amount,
+        shipping_cost
       },
+    })
+
+    // Get the final result with all updates
+    const finalResult = await prisma.transactions.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            item: true,
+          },
+        },
+        customer: true,
+        billing_address: true,
+        shipping_address: true,
+        shipments: true,
+      },
+    })
+
+    // Convert all Decimal values to numbers
+    return {
+      data: convertDecimalToNumber(finalResult),
       error: null
     }
   } catch (error) {
@@ -207,12 +292,9 @@ export async function updateTransaction(id: string, data: TransactionUpdateInput
     ...data,
     ...(data.entity_id ? { entity_id: data.entity_id } : {}),
     tax: data.tax || undefined,
-    items: {
-      // Your items update logic here
-    }
   }
 
-  return await prisma.transactions.update({
+  const result = await prisma.transactions.update({
     where: { id },
     data: updateData,
     include: {
@@ -224,6 +306,9 @@ export async function updateTransaction(id: string, data: TransactionUpdateInput
       customer: true,
     },
   })
+
+  // Convert all Decimal values to numbers
+  return convertDecimalToNumber(result)
 }
 
 export async function deleteTransaction(id: string) {

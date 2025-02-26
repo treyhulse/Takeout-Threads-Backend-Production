@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { TransactionItemWithDetails } from "@/types/transactionItems"
+import { useState, useEffect } from "react"
+import { Transaction, TransactionItem } from "@/types/transactions"
 import { Item } from "@/types/items"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,18 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Plus, Trash2 } from "lucide-react"
-import { toast } from "sonner"
+import { Plus, Trash2, Check, X, Pencil } from "lucide-react"
 import { ItemCombobox } from "@/components/items/item-combobox"
-import { addTransactionItem, updateTransactionItem, deleteTransactionItem } from "@/lib/supabase/transactionItems"
-import { Transaction, TransactionItem } from "@/types/transactions"
 import { CardContent } from "@/components/ui/card"
 
 interface TransactionItemsProps {
@@ -33,235 +22,246 @@ interface TransactionItemsProps {
   onItemsChange: (items: Partial<TransactionItem>[]) => void
 }
 
+interface EditableItem extends Partial<TransactionItem> {
+  isNew?: boolean
+  isEditing?: boolean
+}
+
 export function TransactionItems({ transaction, onItemsChange }: TransactionItemsProps) {
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null)
-  const [quantity, setQuantity] = useState(1)
-  const [unitPrice, setUnitPrice] = useState(0)
-  const [discount, setDiscount] = useState(0)
-  const [isAddingItem, setIsAddingItem] = useState(false)
-  const [editingItem, setEditingItem] = useState<string | null>(null)
+  const [items, setItems] = useState<EditableItem[]>(transaction.items || [])
+  const [editingItem, setEditingItem] = useState<EditableItem | null>(null)
 
-  const handleAddItem = async () => {
-    if (!selectedItem) return
+  useEffect(() => {
+    setItems(transaction.items || [])
+  }, [transaction.items])
 
-    try {
-      const total = (quantity * unitPrice) - (discount || 0)
-      const { error } = await addTransactionItem(transaction.id, {
-        item_id: selectedItem.id,
-        quantity,
-        unit_price: unitPrice,
-        discount,
-        total,
-      })
-
-      if (error) throw new Error(error)
-
-      setIsAddingItem(false)
-      setSelectedItem(null)
-      setQuantity(1)
-      setUnitPrice(0)
-      setDiscount(0)
-      onItemsChange([{ ...transaction.items.find(i => i.item_id === selectedItem.id)!, quantity, unit_price: unitPrice, discount, total }])
-      toast.success("Item added successfully")
-    } catch (error) {
-      toast.error("Failed to add item")
+  const handleAddNewRow = () => {
+    const newItem: EditableItem = {
+      isNew: true,
+      isEditing: true,
+      quantity: 1,
+      unit_price: 0,
+      discount: 0,
+      total: 0
     }
+    setItems([...items, newItem])
+    setEditingItem(newItem)
   }
 
-  const handleUpdateItem = async (id: string, data: { quantity?: number; unit_price?: number; discount?: number }) => {
-    try {
-      const item = transaction.items.find(i => i.item_id === id)
-      if (!item) return
-
-      const updatedQuantity = data.quantity ?? item.quantity
-      const updatedUnitPrice = data.unit_price ?? item.unit_price
-      const updatedDiscount = data.discount ?? item.discount ?? 0
-
-      const total = (updatedQuantity * Number(updatedUnitPrice)) - Number(updatedDiscount)
-
-      const { error } = await updateTransactionItem(id, {
-        ...data,
-        total,
-      })
-
-      if (error) throw new Error(error)
-
-      setEditingItem(null)
-      onItemsChange([{ ...item, ...data, total }])
-      toast.success("Item updated successfully")
-    } catch (error) {
-      toast.error("Failed to update item")
-    }
+  const handleItemSelect = (itemId: string, selectedItem: Item, editingItem: EditableItem) => {
+    const updatedItems = items.map(item => 
+      item === editingItem ? {
+        ...item,
+        item_id: itemId,
+        item: {
+          id: selectedItem.id,
+          name: selectedItem.name,
+          sku: selectedItem.sku,
+          unit_of_measure: selectedItem.unit_of_measure
+        },
+        unit_price: Number(selectedItem.price) || 0
+      } : item
+    )
+    setItems(updatedItems)
+    calculateTotal(updatedItems)
   }
 
-  const handleDeleteItem = async (id: string) => {
-    try {
-      const { error } = await deleteTransactionItem(id)
-      if (error) throw new Error(error)
-      onItemsChange(transaction.items.filter(i => i.item_id !== id))
-      toast.success("Item removed successfully")
-    } catch (error) {
-      toast.error("Failed to remove item")
+  const handleInputChange = (
+    value: string | number,
+    field: keyof EditableItem,
+    editingItem: EditableItem
+  ) => {
+    const updatedItems = items.map(item => {
+      if (item === editingItem) {
+        const updatedItem = { ...item, [field]: value }
+        // Recalculate total
+        if (field === 'quantity' || field === 'unit_price' || field === 'discount') {
+          const quantity = Number(field === 'quantity' ? value : item.quantity) || 0
+          const unitPrice = Number(field === 'unit_price' ? value : item.unit_price) || 0
+          const discount = Number(field === 'discount' ? value : item.discount) || 0
+          updatedItem.total = (quantity * unitPrice) - discount
+        }
+        return updatedItem
+      }
+      return item
+    })
+    setItems(updatedItems)
+    calculateTotal(updatedItems)
+  }
+
+  const calculateTotal = (currentItems: EditableItem[]) => {
+    const total = currentItems.reduce((sum, item) => sum + (Number(item.total) || 0), 0)
+    onItemsChange(currentItems)
+  }
+
+  const handleSaveRow = (editingItem: EditableItem) => {
+    if (!editingItem.item_id || !editingItem.quantity) return
+
+    const updatedItems = items.map(item =>
+      item === editingItem ? { ...item, isEditing: false, isNew: false } : item
+    )
+    setItems(updatedItems)
+    setEditingItem(null)
+    calculateTotal(updatedItems)
+  }
+
+  const handleDeleteRow = (itemToDelete: EditableItem) => {
+    const updatedItems = items.filter(item => item !== itemToDelete)
+    setItems(updatedItems)
+    calculateTotal(updatedItems)
+  }
+
+  const handleEditRow = (item: EditableItem) => {
+    const updatedItems = items.map(i => ({
+      ...i,
+      isEditing: i === item
+    }))
+    setItems(updatedItems)
+    setEditingItem(item)
+  }
+
+  const handleCancelEdit = (editingItem: EditableItem) => {
+    if (editingItem.isNew) {
+      setItems(items.filter(item => item !== editingItem))
+    } else {
+      const updatedItems = items.map(item =>
+        item === editingItem ? { ...item, isEditing: false } : item
+      )
+      setItems(updatedItems)
     }
+    setEditingItem(null)
   }
 
   return (
-    <CardContent>
-      <div className="space-y-4">
+    <CardContent className="p-0">
+      <div className="flex justify-between items-center p-4 border-b">
         <h3 className="text-lg font-semibold">Items</h3>
-        <div className="flex justify-between items-center">
-          <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Item</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Item</label>
+        <Button onClick={handleAddNewRow} disabled={!!editingItem}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Line
+        </Button>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[300px]">Item</TableHead>
+            <TableHead>Quantity</TableHead>
+            <TableHead>Unit Price</TableHead>
+            <TableHead>Discount</TableHead>
+            <TableHead className="text-right">Total</TableHead>
+            <TableHead className="w-[100px]"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item, index) => (
+            <TableRow key={item.id || index}>
+              <TableCell>
+                {item.isEditing ? (
                   <ItemCombobox
-                    value={selectedItem?.id}
-                    onChange={(itemId, item) => {
-                      setSelectedItem(item)
-                      setUnitPrice(Number(item.price || 0))
-                    }}
+                    value={item.item_id}
+                    onChange={(id, selectedItem) => handleItemSelect(id, selectedItem, item)}
                   />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Quantity</label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                    />
+                ) : (
+                  <div>
+                    <div className="font-medium">{item.item?.name}</div>
+                    <div className="text-sm text-muted-foreground">{item.item?.sku}</div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Unit Price</label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={unitPrice}
-                      onChange={(e) => setUnitPrice(Number(e.target.value))}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Discount</label>
+                )}
+              </TableCell>
+              <TableCell>
+                {item.isEditing ? (
+                  <Input
+                    type="number"
+                    min="1"
+                    value={item.quantity || ''}
+                    onChange={(e) => handleInputChange(Number(e.target.value), 'quantity', item)}
+                    className="w-24"
+                  />
+                ) : (
+                  item.quantity
+                )}
+              </TableCell>
+              <TableCell>
+                {item.isEditing ? (
                   <Input
                     type="number"
                     step="0.01"
-                    value={discount}
-                    onChange={(e) => setDiscount(Number(e.target.value))}
+                    value={item.unit_price || ''}
+                    onChange={(e) => handleInputChange(Number(e.target.value), 'unit_price', item)}
+                    className="w-32"
                   />
-                </div>
-                <Button className="w-full" onClick={handleAddItem}>
-                  Add Item
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Item</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Unit Price</TableHead>
-                <TableHead>Discount</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transaction.items.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No items added yet
-                  </TableCell>
-                </TableRow>
-              ) : (
-                transaction.items.map((item) => (
-                  <TableRow key={item.item_id}>
-                    <TableCell>{item.item.name}</TableCell>
-                    <TableCell>
-                      {editingItem === item.item_id ? (
-                        <Input
-                          type="number"
-                          min="1"
-                          className="w-20"
-                          defaultValue={item.quantity}
-                          onBlur={(e) => {
-                            handleUpdateItem(item.item_id, { quantity: Number(e.target.value) })
-                          }}
-                        />
-                      ) : (
-                        <span className="cursor-pointer" onClick={() => setEditingItem(item.item_id)}>
-                          {item.quantity}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingItem === item.item_id ? (
-                        <Input
-                          type="number"
-                          step="0.01"
-                          className="w-24"
-                          defaultValue={Number(item.unit_price)}
-                          onBlur={(e) => {
-                            handleUpdateItem(item.item_id, { unit_price: Number(e.target.value) })
-                          }}
-                        />
-                      ) : (
-                        <span className="cursor-pointer" onClick={() => setEditingItem(item.item_id)}>
-                          ${Number(item.unit_price).toFixed(2)}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingItem === item.item_id ? (
-                        <Input
-                          type="number"
-                          step="0.01"
-                          className="w-24"
-                          defaultValue={Number(item.discount || 0)}
-                          onBlur={(e) => {
-                            handleUpdateItem(item.item_id, { discount: Number(e.target.value) })
-                          }}
-                        />
-                      ) : (
-                        <span className="cursor-pointer" onClick={() => setEditingItem(item.item_id)}>
-                          ${Number(item.discount || 0).toFixed(2)}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ${Number(item.total).toFixed(2)}
-                    </TableCell>
-                    <TableCell>
+                ) : (
+                  `$${Number(item.unit_price).toFixed(2)}`
+                )}
+              </TableCell>
+              <TableCell>
+                {item.isEditing ? (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={item.discount || ''}
+                    onChange={(e) => handleInputChange(Number(e.target.value), 'discount', item)}
+                    className="w-24"
+                  />
+                ) : (
+                  item.discount ? `$${Number(item.discount).toFixed(2)}` : '-'
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                ${Number(item.total).toFixed(2)}
+              </TableCell>
+              <TableCell>
+                <div className="flex justify-end gap-2">
+                  {item.isEditing ? (
+                    <>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteItem(item.item_id)}
+                        onClick={() => handleSaveRow(item)}
+                        disabled={!item.item_id || !item.quantity}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Check className="h-4 w-4" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleCancelEdit(item)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditRow(item)}
+                      >
+                        <span className="sr-only">Edit</span>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteRow(item)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+          {items.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={6} className="h-24 text-center">
+                No items added. Click &quot;Add Line&quot; to add items.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </CardContent>
   )
 } 

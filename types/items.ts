@@ -14,7 +14,6 @@ export type Item = {
   description?: string
   sku: string
   type: string
-  variations?: Record<string, any>
   price: string | null
   global_identifier?: string
   status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'

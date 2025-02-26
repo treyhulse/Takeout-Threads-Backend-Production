@@ -5,60 +5,47 @@ import { useRouter } from "next/navigation"
 import { TransactionType } from "@prisma/client"
 import { Button } from "@/components/ui/button"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Plus } from "lucide-react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
 import { createTransaction } from "@/lib/supabase/transactions"
 import { toast } from "sonner"
 import { CustomerCombobox } from "@/components/customers/customer-combobox"
 
-const formSchema = z.object({
-  type: z.nativeEnum(TransactionType),
-  entity_id: z.string().optional(),
-})
-
 export function CreateTransactionModal() {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      type: TransactionType.SALE,
-    },
-  })
+  const [selectedType, setSelectedType] = useState<TransactionType | null>(null)
+  const [customerId, setCustomerId] = useState<string | null>(null)
+  const [isCustomerDialogOpen, setIsCustomerDialogOpen] = useState(false)
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleTypeSelect = async (type: TransactionType) => {
+    setSelectedType(type)
+    setIsCustomerDialogOpen(true)
+  }
+
+  const handleCreateTransaction = async () => {
+    if (!selectedType) return
+
     try {
       const result = await createTransaction({
-        ...values,
+        type: selectedType,
+        entity_id: customerId || undefined,
         total: 0,
         items: []
       })
       
-      setOpen(false)
+      setIsCustomerDialogOpen(false)
+      setSelectedType(null)
+      setCustomerId(null)
       router.push(`/dashboard/transactions/${result.id}`)
       toast.success("Transaction created successfully")
     } catch (error) {
@@ -67,68 +54,54 @@ export function CreateTransactionModal() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Quick Add Transaction
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Quick Add Transaction</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Transaction Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.values(TransactionType).map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type.charAt(0) + type.slice(1).toLowerCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Transaction
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[200px]">
+          {Object.values(TransactionType).map((type) => (
+            <DropdownMenuItem
+              key={type}
+              onClick={() => handleTypeSelect(type)}
+              className="cursor-pointer"
+            >
+              {type.charAt(0) + type.slice(1).toLowerCase()}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-            <FormField
-              control={form.control}
-              name="entity_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer</FormLabel>
-                  <CustomerCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
+      <Dialog open={isCustomerDialogOpen} onOpenChange={setIsCustomerDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Select Customer (Optional)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <CustomerCombobox
+              value={customerId || undefined}
+              onChange={(value) => setCustomerId(value)}
             />
-
-            <Button type="submit" className="w-full">
-              Create and Continue
-            </Button>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => handleCreateTransaction()}
+              >
+                Skip
+              </Button>
+              <Button
+                onClick={() => handleCreateTransaction()}
+                disabled={!customerId}
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 } 

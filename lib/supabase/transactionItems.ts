@@ -4,6 +4,31 @@ import prisma from "@/utils/db"
 import { TransactionItemCreateInput, TransactionItemUpdateInput } from "@/types/transactionItems"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { revalidatePath } from "next/cache"
+import { Decimal } from "@prisma/client/runtime/library"
+
+// Helper function to convert Decimal to number and handle dates
+const convertDecimalToNumber = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj
+  if (typeof obj !== 'object') return obj
+  
+  if (obj instanceof Decimal) {
+    return Number(obj)
+  }
+
+  if (obj instanceof Date) {
+    return obj.toISOString()
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(convertDecimalToNumber)
+  }
+  
+  const converted: any = {}
+  for (const key in obj) {
+    converted[key] = convertDecimalToNumber(obj[key])
+  }
+  return converted
+}
 
 export async function addTransactionItem(
   transactionId: string,
@@ -35,7 +60,7 @@ export async function addTransactionItem(
     await updateTransactionTotal(transactionId)
     
     revalidatePath(`/dashboard/transactions/${transactionId}`)
-    return { data: item, error: null }
+    return { data: convertDecimalToNumber(item), error: null }
   } catch (error) {
     console.error('Error adding transaction item:', error)
     return { data: null, error: 'Failed to add item' }
@@ -65,7 +90,7 @@ export async function updateTransactionItem(
     await updateTransactionTotal(item.transaction_id)
     
     revalidatePath(`/dashboard/transactions/${item.transaction_id}`)
-    return { data: item, error: null }
+    return { data: convertDecimalToNumber(item), error: null }
   } catch (error) {
     console.error('Error updating transaction item:', error)
     return { data: null, error: 'Failed to update item' }

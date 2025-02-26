@@ -58,7 +58,6 @@ model Items {
   description       String?
   sku               String
   type              String
-  variations        Json?
   price             Decimal?
   global_identifier String?
   status            ItemStatus @default(DRAFT)
@@ -292,7 +291,7 @@ model TransactionItems {
   transaction_id  String
   item_id         String
   quantity        Int
-  price_level     String?
+  price_level     String?     // This is optional (nullable)
   unit_price      Decimal
   discount        Decimal?
   total           Decimal
@@ -641,11 +640,15 @@ enum ReportType {
   PIE_CHART
   TABLE
   KPI
+  FUNNEL
+  SCATTER_PLOT
+  HEATMAP
+  CUSTOM
 }
 
 enum ReportPermission {
   VIEW
   EDIT
   ADMIN
+  MANAGE
 }
-

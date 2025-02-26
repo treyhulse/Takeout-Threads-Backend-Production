@@ -3,8 +3,9 @@
 import { Transaction } from "@/types/transactions"
 import { CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { CustomerCombobox } from "@/components/customers/customer-combobox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState } from "react"
 
 interface TransactionCustomerProps {
   transaction: Transaction
@@ -15,6 +16,8 @@ export function TransactionCustomer({
   transaction, 
   onChange 
 }: TransactionCustomerProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
   return (
     <div className="rounded-lg border">
       <div className="p-6">
@@ -32,26 +35,47 @@ export function TransactionCustomer({
                   {transaction.customer.email}
                 </p>
               </div>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsDialogOpen(true)}
+              >
                 Change Customer
               </Button>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search customers..."
-                className="pl-8"
-              />
-            </div>
-            <p className="text-sm text-muted-foreground">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              Select Customer
+            </Button>
+            <p className="text-sm text-muted-foreground text-center">
               No customer assigned to this transaction
             </p>
           </div>
         )}
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Select Customer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <CustomerCombobox
+              value={transaction.customer?.id}
+              onChange={(value) => {
+                onChange(value)
+                setIsDialogOpen(false)
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 

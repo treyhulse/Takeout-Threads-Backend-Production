@@ -58,14 +58,18 @@ export function TransactionSummary({ transaction }: TransactionSummaryProps) {
                 <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-medium">{formatCurrency(transaction.total)}</span>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Tax</span>
-                <span className="font-medium">{formatCurrency(transaction.tax_amount)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Shipping</span>
-                <span className="font-medium">{formatCurrency(transaction.shipping_cost)}</span>
-              </div>
+              {transaction.tax_amount > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Tax</span>
+                  <span className="font-medium">{formatCurrency(transaction.tax_amount)}</span>
+                </div>
+              )}
+              {transaction.shipping_cost > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span className="font-medium">{formatCurrency(transaction.shipping_cost)}</span>
+                </div>
+              )}
               <div className="pt-3 border-t">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">Total</span>
