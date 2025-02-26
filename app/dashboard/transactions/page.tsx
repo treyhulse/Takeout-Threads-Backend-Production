@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { getTransactions } from "@/lib/supabase/transactions"
-import { Transaction } from "@/types/transactions"
+import { Transaction, TransactionItem } from "@/types/transactions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -29,7 +29,7 @@ export default function TransactionsPage() {
     try {
       const { data, error } = await getTransactions()
       if (error) throw new Error(error)
-      const safeData = data?.map(item => ({
+      const safeData = data?.map((item: Transaction) => ({
         ...item,
         billing_address: null,
         shipping_address: null,
@@ -39,7 +39,7 @@ export default function TransactionsPage() {
         tax_amount: Number(item.tax_amount),
         shipping_cost: Number(item.shipping_cost),
         total_amount: Number(item.total_amount),
-        items: item.items.map(i => ({ ...i, created_at: new Date() }))
+        items: item.items.map((i: TransactionItem) => ({ ...i, created_at: new Date() }))
       })) || []
       setTransactions(safeData)
     } catch (error) {
