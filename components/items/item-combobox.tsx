@@ -37,7 +37,6 @@ export function ItemCombobox({ value, onChange }: ItemComboboxProps) {
           // Convert the Prisma data to our Item type
           const formattedData = data.map(item => ({
               ...item,
-              variations: item.variations ?? null,
               metadata: item.metadata ?? null,
               tags: item.tags ?? null,
           })) as unknown as Item[]
