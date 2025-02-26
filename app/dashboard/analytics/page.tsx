@@ -1,398 +1,726 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ChartContainer } from "@/components/ui/chart"
 import { Bar, BarChart, Line, LineChart, XAxis, YAxis } from "recharts"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  BarChart3,
-  BookMarked,
-  Calendar,
-  DollarSign,
-  Download,
-  LineChartIcon,
-  Loader2,
   Plus,
+  Loader2,
+  Trash2,
+  Edit,
   Share2,
-  ShoppingCart,
-  Sparkles,
-  Star,
-  TrendingUp,
-  Users,
 } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd"
+import { useState, useEffect } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { createReport, getReports, deleteReport } from "@/lib/supabase/reports"
+import { baseRecordTypes } from "@/lib/utils/schema-fields"
+import { toast } from "sonner"
+import { Metric, Dimension, BaseRecordType, ReportType, ReportFormData } from "@/types/reports"
+import { useRouter } from "next/navigation"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+const reportSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  type: z.enum(["BAR_CHART", "LINE_CHART", "PIE_CHART", "TABLE", "KPI"]),
+  is_public: z.boolean().default(false),
+  base_record: z.string().min(1, "Base record type is required"),
+  config: z.object({
+    metrics: z.array(z.string()),
+    dimensions: z.array(z.string()),
+    filters: z.array(z.object({
+      field: z.string(),
+      operator: z.string(),
+      value: z.string(),
+    })).optional(),
+    visualization: z.object({
+      type: z.string(),
+      options: z.record(z.any()),
+    }),
+  }),
+})
 
 export default function AnalyticsPage() {
-  const chartConfig = {
-    revenue: {
-      label: "Revenue",
-      color: "hsl(var(--chart-1))",
+  const [reports, setReports] = useState<any[]>([])
+  const [isCreatingReport, setIsCreatingReport] = useState(false)
+  const [selectedBaseRecord, setSelectedBaseRecord] = useState<BaseRecordType | null>(null)
+  const [selectedMetrics, setSelectedMetrics] = useState<Metric[]>([])
+  const [selectedDimensions, setSelectedDimensions] = useState<Dimension[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [reportToDelete, setReportToDelete] = useState<string | null>(null)
+  const router = useRouter()
+
+  const form = useForm({
+    resolver: zodResolver(reportSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      type: "BAR_CHART",
+      is_public: false,
+      base_record: "",
+      config: {
+        metrics: [],
+        dimensions: [],
+        filters: [],
+        visualization: {
+          type: "bar",
+          options: {},
+        },
+      },
     },
-    orders: {
-      label: "Orders",
-      color: "hsl(var(--chart-2))",
-    },
-    customers: {
-      label: "Customers",
-      color: "hsl(var(--chart-3))",
-    },
+  })
+
+  const onBaseRecordChange = (recordId: string) => {
+    const baseRecord = baseRecordTypes.find(r => r.id === recordId)
+    setSelectedBaseRecord(baseRecord || null)
+    setSelectedMetrics([])
+    setSelectedDimensions([])
+    form.setValue("base_record", recordId)
   }
 
-  // Sample data
-  const revenueData = [
-    { date: "2024-01", revenue: 2400, orders: 145, customers: 120 },
-    { date: "2024-02", revenue: 1398, orders: 132, customers: 115 },
-    { date: "2024-03", revenue: 9800, orders: 164, customers: 180 },
-    { date: "2024-04", revenue: 3908, orders: 189, customers: 160 },
-    { date: "2024-05", revenue: 4800, orders: 176, customers: 170 },
-    { date: "2024-06", revenue: 3800, orders: 203, customers: 190 },
-    { date: "2024-07", revenue: 4300, orders: 211, customers: 195 },
-  ]
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination || !selectedBaseRecord) return
 
-  const popularReports = [
-    {
-      id: 1,
-      name: "Revenue by Product Category",
-      type: "bar",
-      users: 234,
-      saved: true,
-    },
-    {
-      id: 2,
-      name: "Customer Acquisition Cost",
-      type: "line",
-      users: 189,
-      saved: false,
-    },
-    {
-      id: 3,
-      name: "Order Fulfillment Time",
-      type: "bar",
-      users: 156,
-      saved: true,
-    },
-  ]
+    const { source, destination } = result
+    const [sourceGroup, sourceId] = source.droppableId.split("-")
+    const [destGroup, destId] = destination.droppableId.split("-")
 
-  const sharedReports = [
-    {
-      id: 1,
-      name: "Q1 Performance Analysis",
-      sharedBy: "Emma Wilson",
-      avatar: "/placeholder.svg?height=32&width=32",
-      date: "2024-02-01",
-    },
-    {
-      id: 2,
-      name: "Customer Retention Metrics",
-      sharedBy: "Alex Thompson",
-      avatar: "/placeholder.svg?height=32&width=32",
-      date: "2024-02-03",
-    },
-  ]
+    if (sourceGroup === "metrics" && destGroup === "selected") {
+      let metric: Metric | undefined
+      
+      if (sourceId === "base") {
+        metric = selectedBaseRecord.metrics[source.index]
+      } else {
+        const relation = selectedBaseRecord.relations.find(r => r.table === sourceId)
+        if (relation) {
+          metric = relation.metrics[source.index]
+        }
+      }
 
-  const aiInsights = [
-    "Revenue has increased by 25% compared to last quarter",
-    "Customer retention rate is showing positive trends",
-    "Top performing product category: Custom T-Shirts",
-    "Recommended action: Increase marketing spend on weekends",
-  ]
+      if (metric && !selectedMetrics.find(m => m.id === metric!.id)) {
+        setSelectedMetrics([...selectedMetrics, metric])
+      }
+    } else if (sourceGroup === "dimensions" && destGroup === "selected") {
+      let dimension: Dimension | undefined
+      
+      if (sourceId === "base") {
+        dimension = selectedBaseRecord.dimensions[source.index]
+      } else {
+        const relation = selectedBaseRecord.relations.find(r => r.table === sourceId)
+        if (relation) {
+          dimension = relation.dimensions[source.index]
+        }
+      }
+
+      if (dimension && !selectedDimensions.find(d => d.id === dimension!.id)) {
+        setSelectedDimensions([...selectedDimensions, dimension])
+      }
+    } else if (sourceGroup === "selected" && destGroup === "selected") {
+      if (sourceId === "metrics") {
+        const items = Array.from(selectedMetrics)
+        const [removed] = items.splice(source.index, 1)
+        items.splice(destination.index, 0, removed)
+        setSelectedMetrics(items)
+      } else if (sourceId === "dimensions") {
+        const items = Array.from(selectedDimensions)
+        const [removed] = items.splice(source.index, 1)
+        items.splice(destination.index, 0, removed)
+        setSelectedDimensions(items)
+      }
+    }
+  }
+
+  useEffect(() => {
+    loadReports()
+  }, [])
+
+  const loadReports = async () => {
+    try {
+      setIsLoading(true)
+      const { data, error } = await getReports()
+      
+      if (error) {
+        toast.error(error)
+        return
+      }
+      if (data) {
+        setReports(data)
+      }
+    } catch (error) {
+      console.error('Error in loadReports:', error)
+      toast.error("An unexpected error occurred while loading reports")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCreateReport = async () => {
+    try {
+      const formData = form.getValues()
+      const visualizationType = formData.type.toLowerCase() as "bar" | "line" | "pie"
+      const reportData = {
+        ...formData,
+        type: formData.type as ReportType,
+        config: {
+          metrics: selectedMetrics.map(m => m.id),
+          dimensions: selectedDimensions.map(d => d.id),
+          base_record: formData.base_record,
+          filters: [],
+          visualization: {
+            type: visualizationType,
+            options: {},
+          },
+        },
+      }
+
+      if (selectedMetrics.length === 0) {
+        toast.error("Please select at least one metric")
+        return
+      }
+
+      if (selectedDimensions.length === 0) {
+        toast.error("Please select at least one dimension")
+        return
+      }
+
+      const { error } = await createReport(reportData)
+      if (error) {
+        toast.error(error)
+        return
+      }
+
+      toast.success("Report created successfully")
+      setIsCreatingReport(false)
+      form.reset()
+      setSelectedBaseRecord(null)
+      setSelectedMetrics([])
+      setSelectedDimensions([])
+      loadReports()
+    } catch (error) {
+      console.error('Error in handleCreateReport:', error)
+      toast.error("An unexpected error occurred while creating the report")
+    }
+  }
+
+  const handleDeleteReport = async (id: string) => {
+    try {
+      const { error } = await deleteReport(id)
+      if (error) {
+        toast.error(error)
+        return
+      }
+      toast.success("Report deleted successfully")
+      loadReports()
+    } catch (error) {
+      console.error('Error in handleDeleteReport:', error)
+      toast.error("An unexpected error occurred while deleting the report")
+    } finally {
+      setReportToDelete(null)
+    }
+  }
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header Section */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Analytics & Reports</h1>
-          <p className="text-muted-foreground">Comprehensive insights and performance metrics</p>
+          <p className="text-muted-foreground">Create and manage your custom reports</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Report
-          </Button>
-        </div>
-      </div>
+        <Dialog open={isCreatingReport} onOpenChange={setIsCreatingReport}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Report
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Report</DialogTitle>
+              <DialogDescription>
+                Select a base record type and customize your report with available metrics and dimensions
+              </DialogDescription>
+            </DialogHeader>
+            <Tabs defaultValue="builder" className="w-full">
+              <TabsList>
+                <TabsTrigger value="builder">Report Builder</TabsTrigger>
+                <TabsTrigger value="preview">Preview</TabsTrigger>
+              </TabsList>
+              <TabsContent value="builder">
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-3 space-y-4">
+                    <Form {...form}>
+                      <form className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="base_record"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Base Record Type</FormLabel>
+                              <Select
+                                onValueChange={(value) => onBaseRecordChange(value)}
+                                value={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select base record type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {baseRecordTypes.map((record) => (
+                                    <SelectItem key={record.id} value={record.id}>
+                                      {record.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Report Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter report name" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea placeholder="Enter description" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="type"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Chart Type</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select chart type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="BAR_CHART">Bar Chart</SelectItem>
+                                  <SelectItem value="LINE_CHART">Line Chart</SelectItem>
+                                  <SelectItem value="PIE_CHART">Pie Chart</SelectItem>
+                                  <SelectItem value="TABLE">Table</SelectItem>
+                                  <SelectItem value="KPI">KPI</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="is_public"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center justify-between">
+                              <FormLabel>Public Report</FormLabel>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </form>
+                    </Form>
+                  </div>
+                  {selectedBaseRecord ? (
+                    <DragDropContext onDragEnd={onDragEnd}>
+                      <div className="col-span-9 grid grid-cols-3 gap-4">
+                        {/* Base Record Metrics */}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold">Base Record Metrics</h3>
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium text-muted-foreground">{selectedBaseRecord.label}</h4>
+                            <Droppable droppableId="metrics-base">
+                              {(provided) => (
+                                <div
+                                  {...provided.droppableProps}
+                                  ref={provided.innerRef}
+                                  className="min-h-[100px] bg-muted p-2 rounded-lg"
+                                >
+                                  {selectedBaseRecord.metrics.map((metric, index) => (
+                                    <Draggable
+                                      key={metric.id}
+                                      draggableId={metric.id}
+                                      index={index}
+                                    >
+                                      {(provided) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          className="bg-background p-2 mb-2 rounded shadow text-sm"
+                                        >
+                                          {metric.label}
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </div>
+                          {selectedBaseRecord.relations.map((relation) => (
+                            <div key={relation.table} className="space-y-2">
+                              <h4 className="text-sm font-medium text-muted-foreground">{relation.table} Metrics</h4>
+                              <Droppable droppableId={`metrics-${relation.table}`}>
+                                {(provided) => (
+                                  <div
+                                    {...provided.droppableProps}
+                                    ref={provided.innerRef}
+                                    className="min-h-[100px] bg-muted p-2 rounded-lg"
+                                  >
+                                    {relation.metrics.map((metric, index) => (
+                                      <Draggable
+                                        key={metric.id}
+                                        draggableId={metric.id}
+                                        index={index}
+                                      >
+                                        {(provided) => (
+                                          <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            className="bg-background p-2 mb-2 rounded shadow text-sm"
+                                          >
+                                            {metric.label}
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                  </div>
+                                )}
+                              </Droppable>
+                            </div>
+                          ))}
+                        </div>
 
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Key Metrics Cards */}
-        <Card className="bg-blue-950 text-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 opacity-70" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
-            <div className="flex items-center pt-1 text-xs text-green-400">
-              <ArrowUpIcon className="h-4 w-4" />
-              <span>+20.1% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
+                        {/* Base Record Dimensions */}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold">Base Record Dimensions</h3>
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium text-muted-foreground">{selectedBaseRecord.label}</h4>
+                            <Droppable droppableId="dimensions-base">
+                              {(provided) => (
+                                <div
+                                  {...provided.droppableProps}
+                                  ref={provided.innerRef}
+                                  className="min-h-[100px] bg-muted p-2 rounded-lg"
+                                >
+                                  {selectedBaseRecord.dimensions.map((dimension, index) => (
+                                    <Draggable
+                                      key={dimension.id}
+                                      draggableId={dimension.id}
+                                      index={index}
+                                    >
+                                      {(provided) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          className="bg-background p-2 mb-2 rounded shadow text-sm"
+                                        >
+                                          {dimension.label}
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </div>
+                          {selectedBaseRecord.relations.map((relation) => (
+                            <div key={relation.table} className="space-y-2">
+                              <h4 className="text-sm font-medium text-muted-foreground">{relation.table} Dimensions</h4>
+                              <Droppable droppableId={`dimensions-${relation.table}`}>
+                                {(provided) => (
+                                  <div
+                                    {...provided.droppableProps}
+                                    ref={provided.innerRef}
+                                    className="min-h-[100px] bg-muted p-2 rounded-lg"
+                                  >
+                                    {relation.dimensions.map((dimension, index) => (
+                                      <Draggable
+                                        key={dimension.id}
+                                        draggableId={dimension.id}
+                                        index={index}
+                                      >
+                                        {(provided) => (
+                                          <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            className="bg-background p-2 mb-2 rounded shadow text-sm"
+                                          >
+                                            {dimension.label}
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                  </div>
+                                )}
+                              </Droppable>
+                            </div>
+                          ))}
+                        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+2,350</div>
-            <div className="flex items-center pt-1 text-xs text-red-500">
-              <ArrowDownIcon className="h-4 w-4" />
-              <span>-4% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12,234</div>
-            <div className="flex items-center pt-1 text-xs text-green-500">
-              <ArrowUpIcon className="h-4 w-4" />
-              <span>+19% from last month</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-yellow-300 to-yellow-400">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Growth Score</CardTitle>
-            <TrendingUp className="h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">89.3</div>
-            <div className="flex items-center pt-1 text-xs">
-              <Star className="h-4 w-4 mr-1" />
-              <span>Excellent Performance</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* AI Insights Card - Spans 2 columns */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-medium">AI Insights</CardTitle>
-              <Badge variant="secondary" className="bg-blue-950 text-white">
-                <Sparkles className="h-3 w-3 mr-1" />
-                Powered by AI
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {aiInsights.map((insight, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  <div className="h-2 w-2 mt-2 rounded-full bg-yellow-300" />
-                  <p>{insight}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Shared Reports Card - Spans 2 columns */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-medium">Shared Reports</CardTitle>
-              <Button variant="ghost" size="sm">
-                <Share2 className="h-4 w-4 mr-1" />
-                Share New
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {sharedReports.map((report) => (
-                <div key={report.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={report.avatar} />
-                      <AvatarFallback>{report.sharedBy[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{report.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Shared by {report.sharedBy} • {new Date(report.date).toLocaleDateString()}
+                        {/* Selected Fields */}
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="font-semibold mb-2">Selected Metrics</h3>
+                            <Droppable droppableId="selected-metrics">
+                              {(provided) => (
+                                <div
+                                  {...provided.droppableProps}
+                                  ref={provided.innerRef}
+                                  className="min-h-[100px] bg-muted p-2 rounded-lg mb-4"
+                                >
+                                  {selectedMetrics.map((metric, index) => (
+                                    <Draggable
+                                      key={metric.id}
+                                      draggableId={`selected-${metric.id}`}
+                                      index={index}
+                                    >
+                                      {(provided) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          className="bg-background p-2 mb-2 rounded shadow text-sm"
+                                        >
+                                          {metric.label}
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold mb-2">Selected Dimensions</h3>
+                            <Droppable droppableId="selected-dimensions">
+                              {(provided) => (
+                                <div
+                                  {...provided.droppableProps}
+                                  ref={provided.innerRef}
+                                  className="min-h-[100px] bg-muted p-2 rounded-lg"
+                                >
+                                  {selectedDimensions.map((dimension, index) => (
+                                    <Draggable
+                                      key={dimension.id}
+                                      draggableId={`selected-${dimension.id}`}
+                                      index={index}
+                                    >
+                                      {(provided) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          className="bg-background p-2 mb-2 rounded shadow text-sm"
+                                        >
+                                          {dimension.label}
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </div>
+                        </div>
+                      </div>
+                    </DragDropContext>
+                  ) : (
+                    <div className="col-span-9 flex items-center justify-center bg-muted rounded-lg p-8">
+                      <p className="text-muted-foreground">
+                        Select a base record type to start building your report
                       </p>
                     </div>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    View
-                  </Button>
+                  )}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </TabsContent>
+              <TabsContent value="preview">
+                <div className="h-[400px] bg-muted rounded-lg flex items-center justify-center">
+                  {selectedMetrics.length === 0 && selectedDimensions.length === 0 ? (
+                    <p className="text-muted-foreground">
+                      Select metrics and dimensions to preview your report
+                    </p>
+                  ) : (
+                    <ChartContainer className="w-full h-full" config={{
+                      chart1: { label: "Preview", color: "hsl(var(--primary))" }
+                    }}>
+                      <BarChart data={[]}>
+                        <XAxis />
+                        <YAxis />
+                        {selectedMetrics.map((metric) => (
+                          <Bar
+                            key={metric.id}
+                            dataKey={metric.id}
+                            name={metric.label}
+                            fill={`hsl(var(--chart-${selectedMetrics.indexOf(metric) + 1}))`}
+                          />
+                        ))}
+                      </BarChart>
+                    </ChartContainer>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreatingReport(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleCreateReport}>
+                Create Report
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Custom Report Builder */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-medium">Custom Report Builder</CardTitle>
-              <CardDescription>Create and customize your analytics reports</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Select defaultValue="7d">
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="Select range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7d">Last 7 days</SelectItem>
-                  <SelectItem value="30d">Last 30 days</SelectItem>
-                  <SelectItem value="90d">Last 90 days</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button>
-                <Loader2 className="mr-2 h-4 w-4" />
-                Generate
-              </Button>
-            </div>
+      {/* Reports List */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {isLoading ? (
+          <div className="col-span-full flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Metrics</label>
-              <Select defaultValue="revenue">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select metrics" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="revenue">Revenue</SelectItem>
-                  <SelectItem value="orders">Orders</SelectItem>
-                  <SelectItem value="customers">Customers</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Visualization</label>
-              <Select defaultValue="line">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="line">Line Chart</SelectItem>
-                  <SelectItem value="bar">Bar Chart</SelectItem>
-                  <SelectItem value="area">Area Chart</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Grouping</label>
-              <Select defaultValue="daily">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select grouping" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        ) : reports.length === 0 ? (
+          <div className="col-span-full">
+            <Card className="bg-muted">
+              <CardHeader className="text-center">
+                <CardTitle>No Reports Yet</CardTitle>
+                <CardDescription>Create your first report to get started</CardDescription>
+              </CardHeader>
+            </Card>
           </div>
-
-          <div className="pt-4">
-            <ChartContainer config={chartConfig} className="h-[400px]">
-              <LineChart data={revenueData}>
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                    })
-                  }}
-                />
-                <YAxis />
-                <Line type="monotone" dataKey="revenue" stroke="var(--color-revenue)" strokeWidth={2} />
-                <Line type="monotone" dataKey="orders" stroke="var(--color-orders)" strokeWidth={2} />
-                <Line type="monotone" dataKey="customers" stroke="var(--color-customers)" strokeWidth={2} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </LineChart>
-            </ChartContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Popular Reports */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {popularReports.map((report) => (
-          <Card key={report.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">{report.name}</CardTitle>
-                {report.type === "bar" ? (
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <LineChartIcon className="h-4 w-4 text-muted-foreground" />
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[200px] flex items-center justify-center bg-muted/5 rounded-md">
-                {report.type === "bar" ? (
-                  <ChartContainer config={chartConfig} className="h-full w-full">
-                    <BarChart data={revenueData.slice(-4)}>
-                      <XAxis
-                        dataKey="date"
-                        tickFormatter={(value) => {
-                          return new Date(value).toLocaleDateString("en-US", {
-                            month: "short",
-                          })
-                        }}
-                      />
-                      <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                    </BarChart>
-                  </ChartContainer>
-                ) : (
-                  <ChartContainer config={chartConfig} className="h-full w-full">
-                    <LineChart data={revenueData.slice(-4)}>
-                      <XAxis
-                        dataKey="date"
-                        tickFormatter={(value) => {
-                          return new Date(value).toLocaleDateString("en-US", {
-                            month: "short",
-                          })
-                        }}
-                      />
-                      <Line type="monotone" dataKey="orders" stroke="var(--color-orders)" strokeWidth={2} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                    </LineChart>
-                  </ChartContainer>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Users className="h-4 w-4 mr-1" />
-                {report.users} users
-              </div>
-              <Button variant="ghost" size="sm">
-                {report.saved ? <BookMarked className="h-4 w-4 mr-1" /> : <Calendar className="h-4 w-4 mr-1" />}
-                {report.saved ? "Saved" : "Schedule"}
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+        ) : (
+          reports.map((report) => (
+            <Card 
+              key={report.id} 
+              className="cursor-pointer transition-all hover:shadow-lg"
+              onClick={() => router.push(`/dashboard/analytics/${report.id}`)}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-medium">{report.name}</CardTitle>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        // Share functionality will be added later
+                      }}
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setReportToDelete(report.id)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <CardDescription>{report.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[200px] bg-muted rounded-lg">
+                  {/* Report preview will go here */}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
+
+      <AlertDialog open={!!reportToDelete} onOpenChange={(open) => !open && setReportToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the report and all its data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button 
+              variant="destructive"
+              onClick={() => reportToDelete && handleDeleteReport(reportToDelete)}
+            >
+              Delete
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

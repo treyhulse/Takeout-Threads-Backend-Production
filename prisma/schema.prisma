@@ -546,3 +546,106 @@ model InventoryMovement {
   item            Items     @relation(fields: [item_id], references: [id])
 }
 
+
+
+
+
+
+
+// Here is where I started building out the reports tables 
+
+model AnalyticsReport {
+  id              String    @id @default(uuid())
+  org_id          String
+  user_id         String    // Creator of the report
+  name            String
+  description     String?
+  type            ReportType
+  config          Json      // Stores visualization and data configuration
+  is_public       Boolean   @default(false)
+  is_favorite     Boolean   @default(false)
+  last_run_at     DateTime?
+  schedule        Json?     // Optional scheduling configuration
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  
+  // Relations
+  dashboards      DashboardReports[]
+  shared_with     ReportSharing[]
+
+  @@unique([org_id, name])
+}
+
+model Dashboard {
+  id              String    @id @default(uuid())
+  org_id          String
+  user_id         String    // Creator of the dashboard
+  name            String
+  description     String?
+  layout          Json      // Stores the grid layout configuration
+  is_public       Boolean   @default(false)
+  is_favorite     Boolean   @default(false)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  // Relations
+  reports         DashboardReports[]
+  shared_with     DashboardSharing[]
+
+  @@unique([org_id, name])
+}
+
+model DashboardReports {
+  id              String    @id @default(uuid())
+  dashboard_id    String
+  report_id       String
+  position        Json      // Stores position and size in the grid
+  created_at      DateTime  @default(now())
+
+  // Relations
+  dashboard       Dashboard       @relation(fields: [dashboard_id], references: [id], onDelete: Cascade)
+  report          AnalyticsReport @relation(fields: [report_id], references: [id], onDelete: Cascade)
+
+  @@unique([dashboard_id, report_id])
+}
+
+model ReportSharing {
+  id              String    @id @default(uuid())
+  report_id       String
+  shared_with     String    // User ID the report is shared with
+  permissions     ReportPermission
+  created_at      DateTime  @default(now())
+
+  // Relations
+  report          AnalyticsReport @relation(fields: [report_id], references: [id], onDelete: Cascade)
+
+  @@unique([report_id, shared_with])
+}
+
+model DashboardSharing {
+  id              String    @id @default(uuid())
+  dashboard_id    String
+  shared_with     String    // User ID the dashboard is shared with
+  permissions     ReportPermission
+  created_at      DateTime  @default(now())
+
+  // Relations
+  dashboard       Dashboard @relation(fields: [dashboard_id], references: [id], onDelete: Cascade)
+
+  @@unique([dashboard_id, shared_with])
+}
+
+enum ReportType {
+  BAR_CHART
+  LINE_CHART
+  PIE_CHART
+  TABLE
+  KPI
+}
+
+enum ReportPermission {
+  VIEW
+  EDIT
+  ADMIN
+}
+
