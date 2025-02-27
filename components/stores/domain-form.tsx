@@ -50,11 +50,23 @@ export function DomainForm({ store }: { store: Store }) {
       })
       window.location.reload()
     } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message
+        : "Failed to verify domain"
+      
       toast({
         title: "Verification Failed",
-        description: error instanceof Error ? error.message : "Failed to verify domain",
-        variant: "destructive",
+        description: errorMessage.includes('already in use by one of your projects')
+          ? "Domain is already configured with this project. Proceeding with verification."
+          : errorMessage,
+        variant: errorMessage.includes('already in use by one of your projects') ? "default" : "destructive",
       })
+
+      // If the error is that the domain is already in use, we should still reload
+      // as this is actually a success case
+      if (errorMessage.includes('already in use by one of your projects')) {
+        window.location.reload()
+      }
     } finally {
       setIsLoading(false)
     }

@@ -152,8 +152,20 @@ export async function verifyDomain(storeId: string) {
 
       console.log('✅ Found matching verification record:', verificationRecord)
 
-      // Add domain to Vercel project
-      await addDomainToVercel(cleanDomain)
+      try {
+        // Add domain to Vercel project
+        await addDomainToVercel(cleanDomain)
+      } catch (error: any) {
+        // If the error is because the domain is already in use with this project,
+        // we can consider this a success
+        if (error.message?.includes('already in use by one of your projects')) {
+          console.log('✅ Domain is already configured with this project')
+          // Continue with verification
+        } else {
+          // For other errors, throw them to be handled
+          throw error
+        }
+      }
 
       // Update store with verified domain
       const updatedStore = await prisma.store.update({
@@ -167,12 +179,15 @@ export async function verifyDomain(storeId: string) {
       console.error('❌ DNS resolution error:', dnsError)
       return { 
         data: null, 
-        error: 'Failed to resolve DNS records. Please ensure the domain is correct.' 
+        error: dnsError instanceof Error ? dnsError.message : 'Failed to resolve DNS records. Please ensure the domain is correct.' 
       }
     }
   } catch (error) {
     console.error('❌ Domain verification error:', error)
-    return { data: null, error: 'Verification process failed' }
+    return { 
+      data: null, 
+      error: error instanceof Error ? error.message : 'Verification process failed' 
+    }
   }
 }
 
