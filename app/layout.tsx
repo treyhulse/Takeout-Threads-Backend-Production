@@ -26,16 +26,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://takeout-threads.com",
+    url: "https://www.takeout-threads.com",
     siteName: "Takeout Threads",
     title: "Takeout Threads",
     description: "Takeout Threads - The ultimate apparel customization platform for print shops. Streamline your operations and grow your business.",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/logos/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Takeout Threads"
+        alt: "Takeout Threads - Print Shop Platform"
       }
     ]
   },
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Takeout Threads",
     description: "Takeout Threads - The ultimate apparel customization platform for print shops. Streamline your operations and grow your business.",
-    images: ["/og-image.jpg"],
+    images: ["/logos/og-image.jpg"],
     creator: "@takeoutthreads"
   },
   robots: {
