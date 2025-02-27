@@ -1,11 +1,51 @@
+# Global rules
 User-agent: *
 Allow: /
-Allow: /sitemap.xml
+Allow: /products/
+Allow: /solutions/
+Allow: /pricing/
+Allow: /resources/
+Allow: /sitemap
 
-# Disallow admin and dashboard routes
+# Protect private routes
 Disallow: /dashboard/
 Disallow: /admin/
 Disallow: /api/
+Disallow: /auth/
+Disallow: /_next/
+Disallow: /*?* # Block URLs with query strings
+Disallow: /*$ # Block URLs ending with $
 
-# Sitemap
-Sitemap: https://www.takeout-threads.com/sitemap.xml 
+# Googlebot specific rules
+User-agent: Googlebot
+Allow: /
+Allow: /*.js
+Allow: /*.css
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+Allow: /robots.txt
+Allow: /favicon.ico
+
+# Bingbot specific rules
+User-agent: Bingbot
+Allow: /
+Allow: /*.js
+Allow: /*.css
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+
+
+# Crawl-delay for rate limiting
+Crawl-delay: 1
+
+# Sitemaps
+Sitemap: https://www.takeout-threads.com/sitemap
+
+# Host
+Host: https://www.takeout-threads.com 
