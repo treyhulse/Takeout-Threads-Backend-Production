@@ -1,7 +1,10 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://takeout-threads.com'
+  // Add console log to verify function is being called
+  console.log('Generating sitemap...');
+  
+  const baseUrl = 'https://www.takeout-threads.com'
   
   // Add your static routes
   const staticRoutes = [

@@ -8,4 +8,4 @@ Disallow: /admin/
 Disallow: /api/
 
 # Sitemap
-Sitemap: https://takeout-threads.com/sitemap.xml 
+Sitemap: https://www.takeout-threads.com/sitemap.xml 
