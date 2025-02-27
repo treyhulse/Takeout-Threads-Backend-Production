@@ -24,9 +24,9 @@ export const metadata: Metadata = {
   creator: "Takeout Threads",
   publisher: "Takeout Threads",
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
   },
   manifest: '/site.webmanifest',
   openGraph: {
