@@ -23,16 +23,39 @@ export const metadata: Metadata = {
   authors: [{ name: "Takeout Threads" }],
   creator: "Takeout Threads",
   publisher: "Takeout Threads",
+  icons: {
+    icon: [
+      {
+        url: '/icon.png',
+        sizes: '32x32',
+        type: 'image/png'
+      },
+      {
+        url: '/icon.png',
+        sizes: '16x16',
+        type: 'image/png'
+      }
+    ],
+    apple: [
+      {
+        url: '/apple-icon.png',
+        sizes: '180x180',
+        type: 'image/png'
+      }
+    ],
+    shortcut: '/favicon.ico'
+  },
+  manifest: '/site.webmanifest',
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://www.takeout-threads.com",
     siteName: "Takeout Threads",
-    title: "Takeout Threads",
-    description: "Takeout Threads - The ultimate apparel customization platform for print shops. Streamline your operations and grow your business.",
+    title: "Takeout Threads - Ultimate Apparel Print Shop Platform",
+    description: "Transform your print shop operations with Takeout Threads. Streamline your workflow, manage orders efficiently, and grow your business with our comprehensive platform.",
     images: [
       {
-        url: "/logos/og-image.jpg",
+        url: "https://www.takeout-threads.com/logos/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Takeout Threads - Print Shop Platform"
@@ -41,10 +64,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Takeout Threads",
-    description: "Takeout Threads - The ultimate apparel customization platform for print shops. Streamline your operations and grow your business.",
-    images: ["/logos/og-image.jpg"],
-    creator: "@takeoutthreads"
+    title: "Takeout Threads - Ultimate Apparel Print Shop Platform",
+    description: "Transform your print shop operations with Takeout Threads. Streamline your workflow, manage orders efficiently, and grow your business with our comprehensive platform.",
+    images: ["https://www.takeout-threads.com/logos/og-image.jpg"],
+    creator: "@takeoutthreads",
+    site: "@takeoutthreads"
   },
   robots: {
     index: true,
