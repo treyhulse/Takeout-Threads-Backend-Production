@@ -23,10 +23,6 @@ export const metadata: Metadata = {
   authors: [{ name: "Takeout Threads" }],
   creator: "Takeout Threads",
   publisher: "Takeout Threads",
-  metadataBase: new URL('https://www.takeout-threads.com'),
-  alternates: {
-    canonical: '/'
-  },
   icons: {
     icon: [
       {
@@ -62,9 +58,7 @@ export const metadata: Metadata = {
         url: "https://www.takeout-threads.com/logos/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Takeout Threads - Print Shop Platform",
-        type: "image/jpeg",
-        secureUrl: "https://www.takeout-threads.com/logos/og-image.jpg"
+        alt: "Takeout Threads - Print Shop Platform"
       }
     ]
   },
