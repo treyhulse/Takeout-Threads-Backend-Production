@@ -1,6 +1,5 @@
 import { Decimal } from '@prisma/client/runtime/library'
 import { Transaction } from '@/types/transactions'
-import { Cart } from '@/types/carts'
 
 export type DiscountType = 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_SHIPPING'
 
@@ -20,5 +19,4 @@ export interface Discount {
   
   // Relations
   transactions?: Transaction[]
-  carts?: Cart[]
 } 

@@ -40,7 +40,6 @@ export type Item = {
   // Relations (optional since they might not always be included)
   inventory_movements?: InventoryMovement[]
   TransactionItems?: TransactionItem[]
-  CartItems?: CartItem[]
 }
 
 export type InventoryMovement = {
@@ -70,18 +69,7 @@ export type TransactionItem = {
   item?: Item
 }
 
-export type CartItem = {
-  id: string
-  cart_id: string
-  item_id: string
-  quantity: number
-  unit_price: number
-  total: number
-  
-  // Relations
-  cart?: Cart
-  item?: Item
-}
+
 
 // Adding these types to support the relations
 export type Transaction = {
@@ -91,8 +79,3 @@ export type Transaction = {
   // ... other transaction fields as needed
 }
 
-export type Cart = {
-  id: string
-  status: 'ACTIVE' | 'CHECKOUT_IN_PROGRESS' | 'CONVERTED' | 'ABANDONED' | 'EXPIRED'
-  // ... other cart fields as needed
-}

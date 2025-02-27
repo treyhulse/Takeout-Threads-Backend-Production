@@ -76,11 +76,6 @@ export const navLinks = [
     href: "/dashboard/profile",
     icon: User,
   },
-  {
-    name: "Carts",
-    href: "/dashboard/carts",
-    icon: ShoppingCart,
-  },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {

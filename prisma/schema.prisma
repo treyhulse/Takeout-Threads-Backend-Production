@@ -85,8 +85,6 @@ model Items {
   // Add this relation
   TransactionItems  TransactionItems[]
 
-  // Add these relations
-  CartItems       CartItems[]
 
   @@unique([org_id, sku])
 }
@@ -142,12 +140,8 @@ model Customers {
   addresses              Addresses[]
   shipping_address       Addresses? @relation("ShippingAddress", fields: [default_shipping_address], references: [address_id])
   billing_address        Addresses? @relation("BillingAddress", fields: [default_billing_address], references: [address_id])
-
-  // Add this relation
   transactions     Transactions[]
 
-  // Add these relations
-  carts           Cart[]
 
   @@unique([org_id, customer_id])
 }
@@ -183,10 +177,6 @@ model Addresses {
   // Add these new relations
   transactions_billing   Transactions[] @relation("TransactionBillingAddress")
   transactions_shipping  Transactions[] @relation("TransactionShippingAddress")
-
-  // Add these relations
-  carts_billing   Cart[] @relation("CartBillingAddress")
-  carts_shipping  Cart[] @relation("CartShippingAddress")
 
   @@unique([org_id, address_id])
 }
@@ -429,60 +419,6 @@ enum PaymentMethod {
 
 
 
-// ADDING IN CART RELATIONS
-
-model Cart {
-  id                String       @id @default(uuid())
-  org_id            String
-  user_id           String      // Supabase auth user_id
-  customer_id       String?     // Optional link to Customers model
-  status            CartStatus   @default(ACTIVE)
-  total             Decimal      @default(0)
-  tax_amount        Decimal      @default(0)
-  shipping_cost     Decimal      @default(0)
-  discount_total    Decimal      @default(0)
-  total_amount      Decimal      @default(0)
-  total_weight      Decimal      @default(0)
-  billing_address_id   String?
-  shipping_address_id  String?
-  checkout_session_id  String?  
-  discount_id       String?      
-  expires_at        DateTime?    
-  created_at        DateTime     @default(now())
-  updated_at        DateTime     @updatedAt
-
-  // Relations
-  items             CartItems[]
-  customer          Customers?   @relation(fields: [customer_id], references: [id])
-  billing_address   Addresses?   @relation("CartBillingAddress", fields: [billing_address_id], references: [id])
-  shipping_address  Addresses?   @relation("CartShippingAddress", fields: [shipping_address_id], references: [id])
-  discount          Discount?    @relation(fields: [discount_id], references: [id])
-
-  @@unique([org_id, id])
-}
-
-model CartItems {  // Renamed from CartItem
-  id              String    @id @default(uuid())
-  cart_id         String
-  item_id         String
-  quantity        Int
-  unit_price      Decimal
-  total           Decimal
-
-  // Relations
-  cart            Cart      @relation(fields: [cart_id], references: [id], onDelete: Cascade)
-  item            Items     @relation(fields: [item_id], references: [id])
-
-  @@unique([cart_id, item_id])
-}
-
-enum CartStatus {
-  ACTIVE
-  CHECKOUT_IN_PROGRESS
-  CONVERTED        // When cart is converted to transaction
-  ABANDONED
-  EXPIRED
-}
 
 enum ShipmentStatus {
   PENDING
@@ -523,7 +459,6 @@ model Discount {
   
   // Relations
   transactions    Transactions[]
-  carts          Cart[]        // Added cart relation
 
   @@unique([org_id, code])
 }
