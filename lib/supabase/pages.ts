@@ -5,6 +5,34 @@ import { CreatePageParams } from "@/types/pages"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { revalidatePath } from "next/cache"
 
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+async function getUniqueSlug(storeId: string, baseSlug: string): Promise<string> {
+  let slug = baseSlug
+  let counter = 0
+  let isUnique = false
+
+  while (!isUnique) {
+    const existingPage = await prisma.page.findFirst({
+      where: { store_id: storeId, slug }
+    })
+    
+    if (!existingPage) {
+      isUnique = true
+    } else {
+      counter++
+      slug = `${baseSlug}-${counter}`
+    }
+  }
+
+  return slug
+}
+
 /**
  * Creates a new page
  */
@@ -15,11 +43,15 @@ export async function createPage(params: CreatePageParams) {
     
     if (!org?.orgCode) throw new Error("No organization found")
 
+    const baseSlug = generateSlug(params.name)
+    const slug = await getUniqueSlug(params.store_id, baseSlug)
+
     const page = await prisma.page.create({
       data: {
         store_id: params.store_id,
         org_id: org.orgCode,
         name: params.name,
+        slug,
         metadata: params.metadata || { layout: [] }
       }
     })

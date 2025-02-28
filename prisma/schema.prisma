@@ -327,10 +327,13 @@ model Page {
   store_id String @map("store_id")
   org_id   String @map("org_id")
   name     String
+  slug     String @default("")
   metadata Json?
 
   // Relations
   store    Store  @relation(fields: [store_id], references: [id])
+
+  @@unique([store_id, slug])
 }
 
 model Component {
