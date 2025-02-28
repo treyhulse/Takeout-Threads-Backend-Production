@@ -587,3 +587,45 @@ enum ReportPermission {
   ADMIN
   MANAGE
 }
+
+
+
+
+// Designs model here, from storefront 
+
+model Design {
+  id            String   @id @default(uuid())
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  name          String?  // Optional name for the design
+  description   String?  // Optional description
+  status        String   @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  is_archived   Boolean  @default(false)
+  version       Int      @default(1)       // For tracking design versions
+
+  user_id       String   // Supabase user ID
+  org_id        String   // Organization ID from user metadata
+  is_public     Boolean  @default(false)   // Whether the design can be viewed by others
+
+  product_id    String   // Reference to the product this design is for
+  product_variant String? // Optional variant identifier (e.g., "small", "red", etc.)
+  product_meta  Json?    // Additional product-specific metadata
+
+  canvas_data   Json     // Complete Fabric.js canvas state including all objects
+  thumbnail_url String?  // Preview image URL
+  
+  last_edited   DateTime @default(now())    // Last time the design was modified
+  view_count    Int      @default(0)        // Number of times the design has been viewed
+  edit_count    Int      @default(0)        // Number of times the design has been edited
+  tags          String[] @default([])       // Array of tags for categorization
+  
+  deleted_at    DateTime?
+
+  @@index([user_id])
+  @@index([org_id])
+  @@index([product_id])
+  @@index([created_at])
+  @@index([status])
+  @@index([tags])
+} 

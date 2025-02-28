@@ -27,8 +27,7 @@ export function Hero() {
             </h1>
 
             <p className="max-w-xl mx-auto mt-4 text-base font-light lg:text-lg text-muted-foreground tracking-tighter">
-              Setting up your shop is hard and time consuming. We make it easy
-              for you manage your operations.
+              Harness the tools of industry giants and become one yourself.
             </p>
             <div className="flex items-center gap-x-5 w-full justify-center mt-5 ">
               <LoginLink>
