@@ -9,7 +9,6 @@ import Image from "next/image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { CreatePageModal } from "@/components/modals/create-page-modal"
-import { CreateComponentModal } from "@/components/modals/create-component-modal"
 import { MediaLibrary } from "@/components/shared/MediaLibrary"
 import { updateStore } from "@/lib/supabase/stores"
 import { verifyDomainOnVercel, checkDomainStatus } from '@/lib/vercel/actions/domains'
@@ -185,7 +184,6 @@ export default async function StorePage({ params }: StorePageProps) {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Store Pages</CardTitle>
               <div className="flex items-center gap-2">
-                <CreateComponentModal orgId={store.org_id} />
                 <CreatePageModal storeId={store.id} orgId={store.org_id} />
               </div>
             </CardHeader>
