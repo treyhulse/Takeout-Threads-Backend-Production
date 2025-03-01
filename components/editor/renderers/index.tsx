@@ -22,13 +22,12 @@ const componentMap = {
   hero: HeroRenderer,
   features: PlaceholderRenderer,
   productGrid: PlaceholderRenderer,
+  text: PlaceholderRenderer,
+  cta: PlaceholderRenderer,
   testimonials: PlaceholderRenderer,
   pricing: PlaceholderRenderer,
   contact: PlaceholderRenderer,
   gallery: PlaceholderRenderer,
-  products: PlaceholderRenderer,
-  text: PlaceholderRenderer,
-  cta: PlaceholderRenderer,
   custom: PlaceholderRenderer,
 } as const
 

@@ -22,7 +22,17 @@ export interface PageMetadata {
   }
 }
 
-export type ComponentType = 'hero' | 'features' | 'productGrid' | 'text' | 'cta'
+export type ComponentType = 
+  | 'hero' 
+  | 'features' 
+  | 'productGrid' 
+  | 'text' 
+  | 'cta'
+  | 'testimonials'
+  | 'pricing'
+  | 'contact'
+  | 'gallery'
+  | 'custom'
 
 export interface BaseComponentProps {
   className?: string
