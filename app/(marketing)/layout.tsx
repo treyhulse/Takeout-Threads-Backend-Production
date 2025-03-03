@@ -10,6 +10,18 @@ export default function MarketingLayout({
   return (
     <>
       <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-2H67S1V4SL"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2H67S1V4SL');
+        `}
+      </Script>
+      <Script
         id="structured-data"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
