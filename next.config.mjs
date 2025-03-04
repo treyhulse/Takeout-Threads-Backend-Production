@@ -26,7 +26,7 @@ const nextConfig = {
         protocol: "https",
         hostname: "api.takeout-threads.com",
         port: "",
-        pathname: "/storage/v1/object/public/**",
+        pathname: "/storage/v1/object/**",
       },
       {
         protocol: "https",
