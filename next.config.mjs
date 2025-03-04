@@ -26,12 +26,6 @@ const nextConfig = {
         protocol: "https",
         hostname: "api.takeout-threads.com",
         port: "",
-        pathname: "/storage/v1/object/**",
-      },
-      {
-        protocol: "https",
-        hostname: "api.microlink.io",
-        port: "",
       },
     ],
   },
