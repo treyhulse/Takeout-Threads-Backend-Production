@@ -32,6 +32,11 @@ const nextConfig = {
         hostname: "aftkzcdfjeidbfutfhfw.supabase.co",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "api.microlink.io",
+        port: "",
+      },
     ],
   },
   experimental: {
