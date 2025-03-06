@@ -44,6 +44,7 @@ export async function uploadImage(formData: FormData) {
     .from("media")
     .getPublicUrl(filePath);
 
+  console.log('Generated public URL:', publicUrlData.publicUrl);
   return publicUrlData.publicUrl;
 }
 

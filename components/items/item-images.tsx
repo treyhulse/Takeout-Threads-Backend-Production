@@ -77,6 +77,10 @@ function SortableImage({ image, index, onRemove }: {
         className="object-cover"
         sizes="(max-width: 768px) 20vw, 16vw"
         loading="lazy"
+        onError={(e) => {
+          console.error('Image failed to load:', image.url);
+          // Optionally set a fallback image
+        }}
       />
       <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100">
         <Button

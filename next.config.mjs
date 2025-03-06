@@ -25,12 +25,12 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "api.takeout-threads.com",
-        pathname: "**",
+        pathname: "/storage/v1/object/public/**",
       },
       {
         protocol: "https",
         hostname: "aftkzcdfjeidbfutfhfw.supabase.co",
-        port: "",
+        pathname: "/storage/v1/object/public/**",
       },
       {
         protocol: "https",
