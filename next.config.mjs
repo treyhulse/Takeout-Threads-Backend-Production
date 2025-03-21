@@ -37,6 +37,16 @@ const nextConfig = {
         hostname: "api.microlink.io",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "takeout-threads.com",
+        port: "",
+      },
+      {
+        protocol: "https",
+        hostname: "*.takeout-threads.com",
+        port: "",
+      },
     ],
   },
   experimental: {

@@ -5,6 +5,14 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB in bytes
 
+function transformStorageUrl(url: string): string {
+  // Replace the Supabase URL with api.takeout-threads.com
+  return url.replace(
+    /https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public/,
+    'https://api.takeout-threads.com/storage/v1/object/public'
+  );
+}
+
 // Helper function to get org path
 async function getOrgPath(subPath?: string): Promise<string> {
   const { getOrganization } = getKindeServerSession()
@@ -130,7 +138,9 @@ export async function getFileUrl(path: string) {
 
     if (!data.publicUrl) throw new Error('Failed to get public URL')
     
-    return { data }
+    // Transform the URL to use our custom domain
+    const transformedUrl = transformStorageUrl(data.publicUrl);
+    return { data: { publicUrl: transformedUrl } }
   } catch (error) {
     console.error('Error getting file URL:', error)
     throw error

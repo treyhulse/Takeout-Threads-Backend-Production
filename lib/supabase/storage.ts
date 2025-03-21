@@ -4,6 +4,22 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createClient } from "@/lib/supabase/client";
 
+function sanitizePath(path: string): string {
+  return path
+    .trim()
+    .replace(/[\r\n]+/g, '')
+    .replace(/%0A/g, '')
+    .replace(/%20/g, ' ');
+}
+
+function transformStorageUrl(url: string): string {
+  // Replace the Supabase URL with api.takeout-threads.com
+  return url.replace(
+    /https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public/,
+    'https://api.takeout-threads.com/storage/v1/object/public'
+  );
+}
+
 /**
  * Uploads an image file to the organization's folder.
  * The file is stored under a path like: `<orgCode>/<timestamp>.<ext>`
@@ -18,12 +34,15 @@ export async function uploadImage(formData: FormData) {
   const { getOrganization } = getKindeServerSession();
   const org = await getOrganization();
   if (!org?.orgCode) throw new Error("No organization found");
-  const orgCode = org.orgCode;
+  const orgCode = sanitizePath(org.orgCode);
 
   // Build a unique file name and path.
   const fileExt = file.name.split(".").pop();
   const fileName = `${Date.now()}.${fileExt}`;
-  const filePath = `${orgCode}/${fileName}`;
+  const filePath = sanitizePath(`${orgCode}/${fileName}`);
+
+  console.log('Upload path:', filePath);
+  console.log('Path characters:', Array.from(filePath).map(c => c.charCodeAt(0)));
 
   // Convert the File into a Buffer (required in Node)
   const fileBuffer = Buffer.from(await file.arrayBuffer());
@@ -43,14 +62,12 @@ export async function uploadImage(formData: FormData) {
   const { data: publicUrlData } = createClient().storage
     .from("media")
     .getPublicUrl(filePath);
-
-  console.log('Raw URL from Supabase:', publicUrlData.publicUrl);
-  console.log('URL characters:', Array.from(publicUrlData.publicUrl).map(c => c.charCodeAt(0)));
   
-  // Ensure the URL is properly formatted without any encoding issues
-  const cleanUrl = new URL(publicUrlData.publicUrl);
-  console.log('Clean URL:', cleanUrl.toString());
-  return cleanUrl.toString();
+  // Transform the URL to use our custom domain
+  const cleanUrl = transformStorageUrl(sanitizePath(publicUrlData.publicUrl));
+  console.log('Clean URL:', cleanUrl);
+  console.log('Clean URL characters:', Array.from(cleanUrl).map(c => c.charCodeAt(0)));
+  return cleanUrl;
 }
 
 /**
@@ -65,7 +82,7 @@ export async function getImages() {
     throw new Error("No organization found");
   }
   
-  const orgCode = org.orgCode;
+  const orgCode = sanitizePath(org.orgCode);
 
   const { data, error } = await createClient().storage
     .from("media")
@@ -92,25 +109,19 @@ export async function getImages() {
       return extension && imageExtensions.includes(extension);
     })
     .map((file) => {
-      // Debug the path components
-      console.log('orgCode raw:', orgCode);
-      console.log('orgCode chars:', Array.from(orgCode).map(c => c.charCodeAt(0)));
-      console.log('file.name raw:', file.name);
-      console.log('file.name chars:', Array.from(file.name).map(c => c.charCodeAt(0)));
-      
-      const path = `${orgCode}/${file.name}`;
-      console.log('Combined path:', path);
-      console.log('Path chars:', Array.from(path).map(c => c.charCodeAt(0)));
+      const path = sanitizePath(`${orgCode}/${file.name}`);
+      console.log('Image path:', path);
+      console.log('Path characters:', Array.from(path).map(c => c.charCodeAt(0)));
 
       const { data: publicUrlData } = createClient().storage
         .from("media")
-        .getPublicUrl(path.trim()); // Try trimming the path
+        .getPublicUrl(path);
       
-      console.log('Raw URL from Supabase (getImages):', publicUrlData.publicUrl);
-      console.log('URL characters (getImages):', Array.from(publicUrlData.publicUrl).map(c => c.charCodeAt(0)));
+      const cleanUrl = transformStorageUrl(sanitizePath(publicUrlData.publicUrl));
+      console.log('Clean URL:', cleanUrl);
+      console.log('URL characters:', Array.from(cleanUrl).map(c => c.charCodeAt(0)));
       
-      // Return the raw URL without trying to parse it
-      return publicUrlData.publicUrl.trim().replace(/[\r\n]+/g, '');
+      return cleanUrl;
     })
     .filter(Boolean);
 }
@@ -123,9 +134,11 @@ export async function deleteImages(urls: string[]) {
     throw new Error("No organization found");
   }
 
+  const orgCode = sanitizePath(org.orgCode);
+
   const filePaths = urls.map(url => {
     const fileName = url.split('/').pop();
-    return `${org.orgCode}/${fileName}`;
+    return sanitizePath(`${orgCode}/${fileName}`);
   });
 
   const { error } = await createClient().storage
