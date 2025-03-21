@@ -44,8 +44,13 @@ export async function uploadImage(formData: FormData) {
     .from("media")
     .getPublicUrl(filePath);
 
-  console.log('Generated public URL:', publicUrlData.publicUrl);
-  return publicUrlData.publicUrl;
+  console.log('Raw URL from Supabase:', publicUrlData.publicUrl);
+  console.log('URL characters:', Array.from(publicUrlData.publicUrl).map(c => c.charCodeAt(0)));
+  
+  // Ensure the URL is properly formatted without any encoding issues
+  const cleanUrl = new URL(publicUrlData.publicUrl);
+  console.log('Clean URL:', cleanUrl.toString());
+  return cleanUrl.toString();
 }
 
 /**
@@ -87,10 +92,25 @@ export async function getImages() {
       return extension && imageExtensions.includes(extension);
     })
     .map((file) => {
+      // Debug the path components
+      console.log('orgCode raw:', orgCode);
+      console.log('orgCode chars:', Array.from(orgCode).map(c => c.charCodeAt(0)));
+      console.log('file.name raw:', file.name);
+      console.log('file.name chars:', Array.from(file.name).map(c => c.charCodeAt(0)));
+      
+      const path = `${orgCode}/${file.name}`;
+      console.log('Combined path:', path);
+      console.log('Path chars:', Array.from(path).map(c => c.charCodeAt(0)));
+
       const { data: publicUrlData } = createClient().storage
         .from("media")
-        .getPublicUrl(`${orgCode}/${file.name}`);
-      return publicUrlData.publicUrl;
+        .getPublicUrl(path.trim()); // Try trimming the path
+      
+      console.log('Raw URL from Supabase (getImages):', publicUrlData.publicUrl);
+      console.log('URL characters (getImages):', Array.from(publicUrlData.publicUrl).map(c => c.charCodeAt(0)));
+      
+      // Return the raw URL without trying to parse it
+      return publicUrlData.publicUrl.trim().replace(/[\r\n]+/g, '');
     })
     .filter(Boolean);
 }

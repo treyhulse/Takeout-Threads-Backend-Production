@@ -31,6 +31,13 @@ interface ItemImagesProps {
   onUpdate?: (item: Item) => void;
 }
 
+function sanitizeUrl(url: string) {
+  return url.trim()
+    .replace(/[\r\n]+/g, '')
+    .replace(/%0A/g, '')
+    .replace(/%20/g, ' ');
+}
+
 function SortableImage({ image, index, onRemove }: { 
   image: ItemImage; 
   index: number;
@@ -48,6 +55,9 @@ function SortableImage({ image, index, onRemove }: {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     transition,
   };
+
+  // Sanitize the image URL
+  const sanitizedUrl = sanitizeUrl(image.url);
 
   return (
     <div 
@@ -71,14 +81,14 @@ function SortableImage({ image, index, onRemove }: {
         </div>
       )}
       <Image
-        src={image.url}
+        src={sanitizedUrl}
         alt={image.name}
         fill
         className="object-cover"
         sizes="(max-width: 768px) 20vw, 16vw"
         loading="lazy"
         onError={(e) => {
-          console.error('Image failed to load:', image.url);
+          console.error('Image failed to load:', sanitizedUrl);
           // Optionally set a fallback image
         }}
       />
@@ -136,8 +146,17 @@ export function ItemImages({ item, onUpdate }: ItemImagesProps) {
 
   const handleImagesSelected = async (selectedUrls: string[]) => {
     try {
+      // Sanitize URLs before converting to ItemImage objects
+      const sanitizedUrls = selectedUrls.map(url => 
+        url.trim()
+           .replace(/[\r\n]+/g, '')
+           // Ensure proper URL encoding
+           .replace(/%0A/g, '')
+           .replace(/%20/g, ' ')
+      );
+
       // Convert URLs to ItemImage objects
-      const newImages: ItemImage[] = selectedUrls.map(url => ({
+      const newImages: ItemImage[] = sanitizedUrls.map(url => ({
         url,
         name: url.split('/').pop() || '',
         size: 0, // We don't have this info from the URL
@@ -172,7 +191,14 @@ export function ItemImages({ item, onUpdate }: ItemImagesProps) {
 
   const handleRemoveImage = async (imageUrl: string) => {
     try {
-      const updatedImages = item.images?.filter(img => img.url !== imageUrl) || [];
+      // Sanitize the URL before comparison
+      const sanitizedUrl = sanitizeUrl(imageUrl);
+
+      const updatedImages = item.images?.filter(img => {
+        const imgUrl = sanitizeUrl(img.url);
+        return imgUrl !== sanitizedUrl;
+      }) || [];
+
       const updates: Partial<Item> = {
         images: updatedImages,
       };
@@ -196,8 +222,11 @@ export function ItemImages({ item, onUpdate }: ItemImagesProps) {
 
   const setAsFrontImage = async (imageUrl: string) => {
     try {
+      // Sanitize the URL before saving
+      const sanitizedUrl = sanitizeUrl(imageUrl);
+
       const { data, error } = await updateItem(item.id, {
-        front_image_url: imageUrl
+        front_image_url: sanitizedUrl
       });
       if (error) throw new Error(error);
       if (data) {

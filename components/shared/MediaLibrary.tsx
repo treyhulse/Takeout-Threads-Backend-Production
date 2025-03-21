@@ -67,6 +67,10 @@ export function MediaLibrary({
     try {
       setIsLoading(true);
       const imageUrls = await getImages();
+      console.log('Received URLs in MediaLibrary:', imageUrls);
+      imageUrls.forEach((url, i) => {
+        console.log(`URL ${i} characters:`, Array.from(url).map(c => c.charCodeAt(0)));
+      });
       setImages(imageUrls);
     } catch (err) {
       console.error('Error fetching images:', err);
@@ -344,6 +348,10 @@ export function MediaLibrary({
                         className="object-cover"
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         loading="lazy"
+                        onError={() => {
+                          console.error('Image failed to load:', url);
+                          console.log('URL characters:', Array.from(url).map(c => c.charCodeAt(0)));
+                        }}
                       />
                       <div 
                         className="absolute bottom-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
