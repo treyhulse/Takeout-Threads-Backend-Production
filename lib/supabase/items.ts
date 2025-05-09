@@ -7,6 +7,19 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { DimensionUnit, WeightUnit } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime/library"
 
+// Helper to convert Decimal fields to numbers for client use
+function convertDecimalToNumber(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj !== 'object') return obj;
+  if (obj instanceof Decimal) return obj.toNumber();
+  if (Array.isArray(obj)) return obj.map(convertDecimalToNumber);
+  const converted: any = {};
+  for (const key in obj) {
+    converted[key] = convertDecimalToNumber(obj[key]);
+  }
+  return converted;
+}
+
 export async function getItems() {
   try {
     const { getOrganization } = getKindeServerSession()
@@ -52,7 +65,8 @@ export async function getItems() {
         createdAt: 'desc',
       },
     })
-    return { data: items, error: null }
+    // Convert all Decimal fields to numbers
+    return { data: convertDecimalToNumber(items), error: null }
   } catch (error) {
     console.error('Error fetching items:', error)
     return { data: null, error: 'Failed to fetch items' }
@@ -168,7 +182,8 @@ export async function getItemById(id: string) {
         org_id: org.orgCode // Ensure users can only view their org's items
       },
     })
-    return { data: item, error: null }
+    // Convert all Decimal fields to numbers
+    return { data: convertDecimalToNumber(item), error: null }
   } catch (error) {
     console.error('Error fetching item:', error)
     return { data: null, error: 'Failed to fetch item' }

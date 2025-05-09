@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +19,8 @@ import { ItemForm } from "@/components/items/item-form"
 import { toast } from "sonner"
 import { getItems, createItem, deleteItem } from "@/lib/supabase/items"
 import { useRouter } from "next/navigation"
+import { DataTable } from "@/components/ui/DataTable"
+import { ColumnDef } from "@tanstack/react-table"
 
 export default function ItemsPage() {
   const [items, setItems] = useState<Item[]>([])
@@ -31,7 +32,7 @@ export default function ItemsPage() {
     try {
       const { data, error } = await getItems()
       if (error) throw new Error(error)
-      const formattedData = (data || []).map(item => ({
+      const formattedData = (data || []).map((item: Item) => ({
         ...item,
         images: (item.images as unknown as ItemImage[]) || undefined,
         price: item.price?.toString() ?? null,
@@ -74,10 +75,78 @@ export default function ItemsPage() {
     }
   }
 
-  const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.sku.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Airtable/NocoDB-like columns
+  const columns: ColumnDef<Item>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.name}</span>
+      ),
+    },
+    {
+      accessorKey: "sku",
+      header: "SKU",
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <Badge variant={
+          row.original.status === 'ACTIVE' ? "default" :
+          row.original.status === 'DRAFT' ? "secondary" : "destructive"
+        }>
+          {row.original.status.toLowerCase()}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+    },
+    {
+      accessorKey: "price",
+      header: "Price",
+      cell: ({ row }) => row.original.price ? `$${row.original.price}` : "-",
+    },
+    {
+      accessorKey: "inventory_quantity",
+      header: "Inventory",
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Created",
+      cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={e => {
+              e.stopPropagation();
+              router.push(`/dashboard/items/${row.original.id}`);
+            }}>
+              View details
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" onClick={e => {
+              e.stopPropagation();
+              handleDeleteItem(row.original.id);
+            }}>
+              Delete item
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
 
   return (
     <div className="p-6 space-y-6">
@@ -101,119 +170,15 @@ export default function ItemsPage() {
           </DialogContent>
         </Dialog>
       </div>
-
-      <Card>
-        <CardContent className="p-0">
-          <div className="flex items-center gap-4 p-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search items..." 
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <div className="h-4 w-[200px] animate-pulse rounded bg-muted"></div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-4 w-[100px] animate-pulse rounded bg-muted"></div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-4 w-[80px] animate-pulse rounded bg-muted"></div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-4 w-[100px] animate-pulse rounded bg-muted"></div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-4 w-[100px] animate-pulse rounded bg-muted"></div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="h-4 w-[32px] animate-pulse rounded bg-muted"></div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : filteredItems.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No items found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredItems.map((item) => (
-                  <TableRow 
-                    key={item.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/dashboard/items/${item.id}`)}
-                  >
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.sku}</TableCell>
-                    <TableCell>
-                      <Badge variant={
-                        item.status === 'ACTIVE' ? "default" :
-                        item.status === 'DRAFT' ? "secondary" : "destructive"
-                      }>
-                        {item.status.toLowerCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{item.type}</TableCell>
-                    <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/dashboard/items/${item.id}`);
-                          }}>
-                            View details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteItem(item.id);
-                            }}
-                          >
-                            Delete item
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <DataTable
+        data={items}
+        columns={columns}
+        onRowClick={item => router.push(`/dashboard/items/${item.id}`)}
+        enableSelection={false}
+        enableColumnVisibility={true}
+        enablePagination={true}
+        enableGlobalFilter={true}
+      />
     </div>
   )
 }
